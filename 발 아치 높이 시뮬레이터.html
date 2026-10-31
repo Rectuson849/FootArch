@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>발 아치 높이 시뮬레이터</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e8ecf0; --surface:#f8fafb; --surface2:#eef2f5; --ink:#13202e; --muted:#566475; --line:#cbd5de;
+  --accent:#0b6e99; --accent-ink:#ffffff; --ok:#13794a; --warn:#b4540a; --bad:#b42323; --info:#2b5cb8;
+  --bone:#efe5cf; --bone-line:#9c8a62; --skin:#f1d3b8; --skin-line:#a77b58; --fascia:#d62b32; --floor:#7d8896; --insole:#3f9c98;
+  color-scheme:light;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1218; --surface:#151c25; --surface2:#1c2530; --ink:#e6ebf1; --muted:#97a3b3; --line:#2a3544;
+    --accent:#4cc3f0; --accent-ink:#04202c; --ok:#4ade80; --warn:#fb923c; --bad:#f87171; --info:#8ab4ff;
+    --bone:#cfc3a3; --bone-line:#8a7c58; --skin:#5a4538; --skin-line:#a98166; --fascia:#ff5a5f; --floor:#6b7482; --insole:#2a8f8b;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1218; --surface:#151c25; --surface2:#1c2530; --ink:#e6ebf1; --muted:#97a3b3; --line:#2a3544;
+  --accent:#4cc3f0; --accent-ink:#04202c; --ok:#4ade80; --warn:#fb923c; --bad:#f87171; --info:#8ab4ff;
+  --bone:#cfc3a3; --bone-line:#8a7c58; --skin:#5a4538; --skin-line:#a98166; --fascia:#ff5a5f; --floor:#6b7482; --insole:#2a8f8b;
+  color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans KR","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;line-height:1.55;-webkit-text-size-adjust:100%}
+.num{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:1320px;margin:0 auto;padding:20px 16px 48px}
+header.top{display:flex;flex-wrap:wrap;gap:6px 24px;align-items:baseline;justify-content:space-between;margin-bottom:16px}
+h1{font-size:26px;line-height:1.2;margin:0;font-weight:700;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:14px;max-width:62ch;margin:4px 0 0}
+.layout{display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:1080px){.layout{grid-template-columns:318px 1fr;align-items:start}.controls{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px}
+.card h2{font-size:14px;font-weight:600;margin:0 0 8px;color:var(--ink)}
+.card h2 small{font-weight:400;color:var(--muted);margin-left:6px}
+.controls .group{padding:10px 0;border-top:1px solid var(--line)}
+.controls .group:first-of-type{border-top:0;padding-top:0}
+.ctl{margin:10px 0 0}
+.ctl label{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;font-weight:500}
+.ctl label output{font-size:13px;color:var(--accent);font-weight:600}
+.ctl .hint{font-size:11.5px;color:var(--muted);margin-top:1px}
+input[type=range]{width:100%;margin:6px 0 0;accent-color:var(--accent)}
+input[type=range]:disabled{opacity:.45}
+.btnrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+button{font:inherit;font-size:12.5px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface2);color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:focus-visible,input:focus-visible,canvas:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button.play{width:100%;padding:9px;font-weight:600}
+.stage{margin-top:6px;font-size:12px;color:var(--muted)}
+.bar{height:6px;border-radius:3px;background:var(--surface2);overflow:hidden;margin-top:6px}
+.bar>i{display:block;height:100%;width:0;background:var(--accent)}
+.vis{display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:720px){.vis{grid-template-columns:1.25fr 1fr}.vis .foot{grid-row:span 2}}
+canvas{display:block;width:100%;height:auto}
+#cvSide{aspect-ratio:3/2}
+#cvRear{aspect-ratio:7/5}
+#cvFoot{aspect-ratio:0.56}
+#cvChart{aspect-ratio:16/6;cursor:crosshair;touch-action:none}
+@media (max-width:600px){#cvChart{aspect-ratio:4/3}}
+.cap{font-size:12px;color:var(--muted);margin:6px 0 0}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:16px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.tile .k{font-size:12px;color:var(--muted)}
+.tile .v{font-size:24px;font-weight:600;line-height:1.2;margin-top:2px}
+.tile .v small{font-size:12px;color:var(--muted);font-weight:400;margin-left:3px}
+.tile .s{font-size:12px;color:var(--muted);margin-top:2px;min-height:18px}
+.badge{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 7px;border-radius:999px;border:1px solid currentColor}
+.badge.ok{color:var(--ok)}.badge.warn{color:var(--warn)}.badge.bad{color:var(--bad)}.badge.info{color:var(--info)}
+.dist{margin-top:16px}
+.stack{display:flex;height:26px;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.stack div{display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;transition:width .12s linear}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.notes{margin-top:16px;display:grid;gap:8px}
+.note{border-left:3px solid var(--info);background:var(--surface);padding:8px 12px;border-radius:0 8px 8px 0;font-size:13.5px;border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.note.warn{border-left-color:var(--warn)}.note.ok{border-left-color:var(--ok)}.note.bad{border-left-color:var(--bad)}
+.section{margin-top:16px}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.cmp{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cmp figure{margin:0;text-align:center;border:1px solid var(--line);border-radius:8px;padding:6px;background:var(--surface2)}
+.cmp figure.cur{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.cmp canvas{aspect-ratio:0.62}
+.cmp figcaption{font-size:12px;margin-top:4px}
+.cmp figcaption b{display:block;font-size:13px}
+details{margin-top:16px;font-size:13px;color:var(--muted)}
+details summary{cursor:pointer;color:var(--ink);font-weight:500}
+details ul{margin:8px 0 0;padding-left:18px}
+.disc{font-size:12px;color:var(--muted);margin-top:14px}
+@media (prefers-reduced-motion:reduce){.stack div{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>발 아치 높이 시뮬레이터</h1>
+      <p class="sub">내측 종아치 높이를 바꾸면 하중을 받을 때 아치가 얼마나 내려앉고, 족저압과 후족 정렬이 어떻게 달라지는지 실험합니다.</p>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="card controls" aria-label="시뮬레이션 설정">
+      <div class="group">
+        <h2>아치 유형 프리셋</h2>
+        <div class="btnrow" id="presets">
+          <button data-h="48" data-k="1.25">높은 아치 (요족)</button>
+          <button data-h="38" data-k="1">정상</button>
+          <button data-h="26" data-k="0.65">낮은 아치 (평발)</button>
+        </div>
+        <div class="ctl">
+          <label for="sH">아치 높이 <output id="oH" class="num"></output></label>
+          <input type="range" id="sH" min="14" max="52" step="1" value="38">
+          <div class="hint">무하중 상태의 주상골 높이 (바닥 기준)</div>
+        </div>
+        <div class="ctl">
+          <label for="sK">아치 강성 <output id="oK" class="num"></output></label>
+          <input type="range" id="sK" min="0.5" max="1.5" step="0.05" value="1">
+          <div class="hint">낮을수록 인대·근육이 느슨한 유연한 발</div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>하중 조건</h2>
+        <div class="ctl">
+          <label for="sM">체중 <output id="oM" class="num"></output></label>
+          <input type="range" id="sM" min="40" max="120" step="1" value="70">
+        </div>
+        <div class="ctl">
+          <label for="sL">한 발에 걸리는 하중 <output id="oL" class="num"></output></label>
+          <input type="range" id="sL" min="0" max="250" step="5" value="50">
+          <div class="hint">체중 대비 %, 한 발 기준</div>
+        </div>
+        <div class="btnrow" id="loads">
+          <button data-l="50">양발 서기</button>
+          <button data-l="100">한 발 서기</button>
+          <button data-l="120">보행 입각기</button>
+          <button data-l="250">달리기 착지</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>보조 조건</h2>
+        <div class="ctl">
+          <label for="sS">인솔 아치 서포트 <output id="oS" class="num"></output></label>
+          <input type="range" id="sS" min="0" max="15" step="1" value="0">
+        </div>
+        <div class="ctl">
+          <label for="sT">발가락 젖힘 <output id="oT" class="num"></output></label>
+          <input type="range" id="sT" min="0" max="60" step="1" value="0">
+          <div class="hint">윈들러스 효과: 근막이 감겨 아치가 올라감</div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>보행 입각기 재생</h2>
+        <button class="play" id="play" aria-pressed="false">재생</button>
+        <div class="bar" aria-hidden="true"><i id="stageBar"></i></div>
+        <div class="stage" id="stageTxt">하중과 발가락 젖힘이 입각기 곡선을 따라 변합니다.</div>
+      </div>
+    </aside>
+
+    <main>
+      <div class="vis">
+        <section class="card">
+          <h2>측면 (내측 종아치)<small>점선 = 무하중</small></h2>
+          <canvas id="cvSide" role="img" aria-label="발 측면 단면: 아치 높이와 족저근막"></canvas>
+        </section>
+        <section class="card foot">
+          <h2>족저압 분포<small>위에서 본 오른발</small></h2>
+          <canvas id="cvFoot" role="img" aria-label="족저압 분포 지도"></canvas>
+        </section>
+        <section class="card">
+          <h2>후면 (후족 정렬)</h2>
+          <canvas id="cvRear" role="img" aria-label="뒤에서 본 후족 외번 각도"></canvas>
+        </section>
+      </div>
+
+      <div class="tiles" id="tiles"></div>
+
+      <div class="card dist">
+        <h2>하중 분포<small id="distTxt"></small></h2>
+        <div class="stack" id="stack"></div>
+        <div class="legend">
+          <span><i style="background:#2f6fb5"></i>뒤꿈치</span>
+          <span><i style="background:#2f9e6a"></i>중족부</span>
+          <span><i style="background:#c9871a"></i>전족부</span>
+          <span><i style="background:#a2453f"></i>발가락</span>
+        </div>
+      </div>
+
+      <div class="notes" id="notes" aria-live="polite"></div>
+
+      <section class="card section">
+        <h2>세 가지 아치 비교<small>같은 체중·하중·인솔 조건, 같은 색 스케일</small></h2>
+        <div class="cmp" id="cmp">
+          <figure data-i="0"><canvas></canvas><figcaption></figcaption></figure>
+          <figure data-i="1"><canvas></canvas><figcaption></figcaption></figure>
+          <figure data-i="2"><canvas></canvas><figcaption></figcaption></figure>
+        </div>
+      </section>
+
+      <section class="card section">
+        <h2>아치 높이 스윕<small>그래프를 누르거나 끌면 아치 높이가 바뀝니다</small></h2>
+        <div class="seg" id="metricSeg" role="group" aria-label="그래프 지표"></div>
+        <canvas id="cvChart" tabindex="0" role="img" aria-label="아치 높이에 따른 지표 변화 그래프"></canvas>
+        <p class="cap" id="chartCap"></p>
+      </section>
+
+      <details>
+        <summary>모델 가정</summary>
+        <ul>
+          <li>아치를 지붕형 트러스로 보고, 체중의 약 35%가 아치로 전달된다고 가정합니다. 아치 강성은 높이의 1.5제곱에 비례합니다.</li>
+          <li>주상골 하강 = 아치 부하 ÷ 아치 강성 (인솔과 윈들러스 효과는 강성을 높이거나 하강을 줄이는 쪽으로 반영).</li>
+          <li>접촉 면적은 피부 아래 간격(주상골 높이 − 14 mm − 인솔 높이)으로 결정하고, 아치 인덱스(Cavanagh)는 발자국을 3등분해 계산합니다.</li>
+          <li>족저근막 장력은 트러스 타이 하중 = P × 스팬 ÷ (4 × 아치 높이)로 추정합니다.</li>
+          <li>후족 외번은 주상골 하강에 비례하는 단순 관계식을 쓰며, 높은 아치는 내번 쪽으로 이동합니다.</li>
+        </ul>
+      </details>
+      <p class="disc">교육용 단순화 모델입니다. 계수는 문헌의 대표값에 맞춘 가정치이므로 개인 진단이나 제품 성능 예측에는 사용할 수 없습니다.</p>
+    </main>
+  </div>
+</div>
+
+<script>
+// ==CORE==
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const sstep=t=>{t=clamp(t,0,1);return t*t*(3-2*t)};
+const NX=56,NY=125,DX=2,N=NX*NY,SPAN=180;
+
+function Wfull(y){
+  if(y<=0)return 0;
+  if(y<62){const u=(62-y)/62;return 50*Math.sqrt(Math.max(0,1-u*u));}
+  if(y<110)return 50+16*sstep((y-62)/48);
+  if(y<170)return 66+22*sstep((y-110)/40);
+  if(y<188){const u=(y-170)/18;return 88*Math.sqrt(Math.max(0,1-u*u));}
+  return 0;
+}
+function widthAt(y,g){
+  const wf=Wfull(y);if(wf===0)return 0;
+  const b=Math.exp(-Math.pow(Math.abs(y-93)/36,10));
+  return wf-(1-g)*Math.max(0,wf-12)*b;
+}
+const toeDefs=[[84,222,12,26,0.50],[62,224,8,19,0.20],[46,216,7.5,17,0.13],[30,206,7,15,0.10],[16,196,6.5,13,0.07]];
+function mk(fn){const a=new Float32Array(N);for(let iy=0;iy<NY;iy++)for(let ix=0;ix<NX;ix++)a[iy*NX+ix]=fn(DX*ix+DX/2,DX*iy+DX/2);return a;}
+const G2=(x,y,cx,cy,sx,sy)=>Math.exp(-(((x-cx)**2)/(2*sx*sx)+((y-cy)**2)/(2*sy*sy)));
+const heelC=mk((x,y)=>G2(x,y,75,22,13,15));
+const midC=mk((x,y)=>Math.exp(-(((y-93)/26)**2))*(0.35+Math.exp(-(100-x)/22)));
+const mtOff=[8,25,43,60,78],mtY=[138,148,156,158,148],mtW=[0.10,0.15,0.21,0.25,0.29];
+const mtC=mtOff.map((o,k)=>mk((x,y)=>G2(x,y,100-o,mtY[k],8,9)));
+const toeC=toeDefs.map(t=>mk((x,y)=>((((x-(100-t[0]))/t[2])**2+((y-t[1])/t[3])**2)<=1)?1:0));
+let toeCount=0;{for(let i=0;i<N;i++){for(let k=0;k<5;k++){if(toeC[k][i]>0){toeCount++;break;}}}}
+
+function sim(s){
+  const BW=s.mass*9.81,F=BW*s.loadPct/100,P=0.35*F;
+  const k=13.5*Math.pow(s.H0/38,1.5)*s.stiff,kI=1.2*s.S;
+  const wl=Math.max(0.2,1-0.012*s.toe);
+  let d=Math.min(P/(k+kI),0.6*s.H0);
+  for(let i=0;i<40;i++){
+    const ke=k*(1+8*Math.pow(d/s.H0,2))+kI;
+    d=0.5*d+0.5*Math.min(P/ke*wl,0.6*s.H0);
+  }
+  const kEff=k*(1+8*Math.pow(d/s.H0,2));
+  const Hn=s.H0-d;
+  const gap=Math.max(0,(Hn-14)-s.S);
+  const g=clamp(1-(gap-2)/30,0,1);
+  const sToe=0.06+0.0008*s.toe;
+  const sMid=0.02+0.25*g+0.004*s.S;
+  const sRem=1-sMid-sToe;
+  const sHeel=sRem*(0.52-0.002*s.toe),sFore=sRem-sHeel;
+  const Pf=P*kEff/(kEff+kI);
+  const T=Pf*SPAN/(4*Math.max(Hn,12))*(1+0.012*s.toe);
+  const ev=1+0.55*d-0.7*Math.max(0,Hn-38);
+  const ang=180-Math.atan2(Hn-10,96)*57.29578-Math.atan2(Hn-8,88)*57.29578;
+  return Object.assign({},s,{BW,F,P,k,kI,d,Hn,g,gap,sToe,sMid,sHeel,sFore,T,ev,ang});
+}
+
+function fp(r){
+  const rowW=new Float32Array(NY),mask=new Uint8Array(N);
+  let cH=0,cM=0,cF=0,cnt=0;
+  for(let iy=0;iy<NY;iy++){
+    const y=DX*iy+DX/2,w=widthAt(y,r.g);rowW[iy]=w;const x0=100-w;
+    if(w<=0)continue;
+    for(let ix=0;ix<NX;ix++){
+      const x=DX*ix+DX/2;
+      if(x>=x0&&x<=100){mask[iy*NX+ix]=1;cnt++;if(y<62)cH++;else if(y<124)cM++;else if(y<186)cF++;}
+    }
+  }
+  const tot=cH+cM+cF,ai=tot?cM/tot:0;
+  const p=new Float32Array(N);
+  const add=(arr,share,useMask)=>{
+    let s=0;
+    for(let i=0;i<N;i++)s+=useMask?arr[i]*mask[i]:arr[i];
+    if(s<1e-9)return;
+    const sc=share*r.F/(s*DX*DX)*1000;
+    for(let i=0;i<N;i++)p[i]+=(useMask?arr[i]*mask[i]:arr[i])*sc;
+  };
+  add(heelC,r.sHeel,true);
+  add(midC,r.sMid,true);
+  for(let k=0;k<5;k++)add(mtC[k],r.sFore*mtW[k],true);
+  for(let k=0;k<5;k++)add(toeC[k],r.sToe*toeDefs[k][4],false);
+  let peak=0,peakI=0;
+  for(let i=0;i<N;i++)if(p[i]>peak){peak=p[i];peakI=i;}
+  return {p,mask,rowW,ai,peak,peakI,areaCm2:(cnt+toeCount)*DX*DX/100};
+}
+// ==/CORE==
+
+// ---------- UI ----------
+const $=s=>document.querySelector(s);
+const state={H0:38,mass:70,loadPct:50,stiff:1,S:0,toe:0,metric:'ai',playing:false,t:0};
+const cv={side:$('#cvSide'),foot:$('#cvFoot'),rear:$('#cvRear'),chart:$('#cvChart')};
+const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const colors=()=>({ink:cssv('--ink'),muted:cssv('--muted'),line:cssv('--line'),accent:cssv('--accent'),ok:cssv('--ok'),warn:cssv('--warn'),bad:cssv('--bad'),info:cssv('--info'),bone:cssv('--bone'),boneLine:cssv('--bone-line'),skin:cssv('--skin'),skinLine:cssv('--skin-line'),fascia:cssv('--fascia'),floor:cssv('--floor'),insole:cssv('--insole'),surface:cssv('--surface')});
+const FONT='"IBM Plex Sans KR","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+
+function fit(c){
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  const r=c.getBoundingClientRect();
+  const w=Math.max(10,Math.round(r.width)),h=Math.max(10,Math.round(r.height));
+  if(c.width!==Math.round(w*dpr)||c.height!==Math.round(h*dpr)){c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);}
+  const x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,w,h);
+  return {x,w,h};
+}
+function cr(P,closed,seg){
+  seg=seg||8;const n=P.length,out=[];
+  const g=i=>closed?P[((i%n)+n)%n]:P[clamp(i,0,n-1)];
+  const m=closed?n:n-1;
+  for(let i=0;i<m;i++){
+    const p0=g(i-1),p1=g(i),p2=g(i+1),p3=g(i+2);
+    for(let k=0;k<seg;k++){
+      const t=k/seg,t2=t*t,t3=t2*t;
+      out.push([0.5*(2*p1[0]+(-p0[0]+p2[0])*t+(2*p0[0]-5*p1[0]+4*p2[0]-p3[0])*t2+(-p0[0]+3*p1[0]-3*p2[0]+p3[0])*t3),
+                0.5*(2*p1[1]+(-p0[1]+p2[1])*t+(2*p0[1]-5*p1[1]+4*p2[1]-p3[1])*t2+(-p0[1]+3*p1[1]-3*p2[1]+p3[1])*t3)]);
+    }
+  }
+  if(!closed)out.push(P[n-1]);
+  return out;
+}
+const STOPS=[[0,[30,64,175]],[.22,[14,165,210]],[.45,[40,190,100]],[.7,[250,215,40]],[1,[220,38,38]]];
+function cmap(t){
+  t=clamp(t,0,1);
+  for(let i=1;i<STOPS.length;i++){
+    if(t<=STOPS[i][0]){
+      const a=STOPS[i-1],b=STOPS[i],u=(t-a[0])/(b[0]-a[0]);
+      return [a[1][0]+(b[1][0]-a[1][0])*u,a[1][1]+(b[1][1]-a[1][1])*u,a[1][2]+(b[1][2]-a[1][2])*u];
+    }
+  }
+  return STOPS[STOPS.length-1][1];
+}
+function classAI(ai){
+  if(ai<0.21)return {t:'높은 아치',tone:'info'};
+  if(ai>0.26)return {t:'낮은 아치',tone:'warn'};
+  return {t:'정상',tone:'ok'};
+}
+
+// ---------- side view ----------
+const bumpS=x=>{const u=(x-48)/137;return(u<=0||u>=1)?0:Math.pow(Math.sin(Math.PI*u),1.2)};
+const bumpB=x=>{const u=(x-24)/181;return(u<=0||u>=1)?0:Math.sin(Math.PI*u)};
+const bumpI=x=>{const u=(x-44)/160;return(u<=0||u>=1)?0:Math.pow(Math.sin(Math.PI*u),2)};
+const MTP=[204,8];
+function rotToe(p,th){
+  if(p[0]<MTP[0]||!th)return p;
+  const dx=p[0]-MTP[0],dy=p[1]-MTP[1],c=Math.cos(th),s=Math.sin(th);
+  return [MTP[0]+dx*c-dy*s,MTP[1]+dx*s+dy*c];
+}
+function outline(Hn,th,S){
+  const yA=(Hn-31)*0.6,gp=Math.max(0,Hn-14);
+  const A=[[6,0],[-2,10],[-4,26],[1,48],[7,92],[10,140]];
+  const B=[[80,140],[80,104+0.5*yA],[92,84+0.7*yA],[124,66+yA],[160,52+0.8*yA],[196,40+0.4*yA],[222,29+0.1*yA],[246,17],[252,7],[250,0],[230,0],[204,0],[190,0]];
+  for(let x=184;x>=50;x-=6)B.push([x,Math.max(S*bumpI(x),gp*bumpS(x))]);
+  B.push([46,0],[24,0],[6,0]);
+  return {A:A,B:B.map(p=>rotToe(p,th))};
+}
+function drawSide(r){
+  const {x:c,w,h}=fit(cv.side),col=colors();
+  const wx0=-18,wx1=272,wy1=182;
+  const s=Math.min(w/(wx1-wx0),(h-26)/(wy1));
+  const ox=(w-(wx1-wx0)*s)/2-wx0*s,oy=h-20;
+  const X=x=>ox+x*s,Y=y=>oy-y*s;
+  const th=r.toe*Math.PI/180;
+  // floor
+  c.strokeStyle=col.floor;c.lineWidth=2;c.beginPath();c.moveTo(X(wx0),Y(0));c.lineTo(X(wx1),Y(0));c.stroke();
+  c.lineWidth=1;c.globalAlpha=.4;
+  for(let x=wx0;x<wx1;x+=10){c.beginPath();c.moveTo(X(x),Y(0));c.lineTo(X(x-6),Y(0)+7);c.stroke();}
+  c.globalAlpha=1;
+  // insole
+  if(r.S>0){
+    c.fillStyle=col.insole;c.globalAlpha=.85;c.beginPath();c.moveTo(X(44),Y(0));
+    for(let x=44;x<=204;x+=4)c.lineTo(X(x),Y(r.S*bumpI(x)));
+    c.lineTo(X(204),Y(0));c.closePath();c.fill();c.globalAlpha=1;
+  }
+  const path=(o,dash)=>{
+    const a=cr(o.A,false,6),b=cr(o.B,false,6);
+    c.beginPath();c.moveTo(X(a[0][0]),Y(a[0][1]));
+    for(let i=1;i<a.length;i++)c.lineTo(X(a[i][0]),Y(a[i][1]));
+    for(let i=0;i<b.length;i++)c.lineTo(X(b[i][0]),Y(b[i][1]));
+    c.closePath();
+  };
+  // ghost (unloaded)
+  const og=outline(r.H0,0,0);
+  c.setLineDash([4,4]);c.strokeStyle=col.muted;c.lineWidth=1.2;path(og);c.stroke();c.setLineDash([]);
+  // current skin
+  const oc=outline(r.Hn,th,r.S);
+  path(oc);c.fillStyle=col.skin;c.globalAlpha=.55;c.fill();c.globalAlpha=1;
+  c.strokeStyle=col.skinLine;c.lineWidth=1.6;c.lineJoin='round';c.stroke();
+  // ghost bone arch
+  const boneY=(Hn,x)=>14+(Hn-14)*bumpB(x);
+  const boneLine=(Hn,lw,stroke,dash)=>{
+    c.beginPath();let first=true;
+    for(let x=24;x<=205;x+=3){const px=X(x),py=Y(boneY(Hn,x));if(first){c.moveTo(px,py);first=false;}else c.lineTo(px,py);}
+    c.lineWidth=lw;c.strokeStyle=stroke;c.lineCap='round';c.setLineDash(dash||[]);c.stroke();c.setLineDash([]);
+  };
+  boneLine(r.H0,1.3,col.muted,[3,4]);
+  // tibia + talus
+  const tz=[66,r.Hn+22];
+  c.lineCap='round';c.strokeStyle=col.boneLine;c.lineWidth=14*s;c.globalAlpha=.55;
+  c.beginPath();c.moveTo(X(60),Y(140));c.lineTo(X(tz[0]),Y(tz[1]));c.stroke();
+  c.strokeStyle=col.bone;c.lineWidth=11*s;c.globalAlpha=1;c.stroke();
+  // calcaneus
+  c.fillStyle=col.bone;c.strokeStyle=col.boneLine;c.lineWidth=1.2;
+  c.beginPath();c.ellipse(X(32),Y(20),22*s,16*s,-0.15,0,Math.PI*2);c.fill();c.stroke();
+  // arch bones
+  boneLine(r.Hn,9*s+2,col.boneLine,null);
+  boneLine(r.Hn,7*s+1,col.bone,null);
+  // talus link
+  c.beginPath();c.strokeStyle=col.boneLine;c.lineWidth=1.2;c.moveTo(X(tz[0]),Y(tz[1]));c.lineTo(X(114),Y(r.Hn));c.stroke();
+  // hallux phalanx
+  const ph=rotToe([244,8],th);
+  c.beginPath();c.moveTo(X(MTP[0]),Y(MTP[1]));c.lineTo(X(ph[0]),Y(ph[1]));
+  c.strokeStyle=col.boneLine;c.lineWidth=7*s+2;c.stroke();c.strokeStyle=col.bone;c.lineWidth=5*s+1;c.stroke();
+  // plantar fascia
+  const hb=rotToe([214,7],th),tens=clamp(r.T/500,0,1);
+  c.strokeStyle=col.fascia;c.lineWidth=1.4+tens*3.2;c.lineCap='round';
+  c.beginPath();c.moveTo(X(16),Y(9));c.lineTo(X(200),Y(6));c.lineTo(X(MTP[0]),Y(MTP[1]-1));c.lineTo(X(hb[0]),Y(hb[1]));c.stroke();
+  // arch angle
+  const nx=X(114),ny=Y(r.Hn),hx=X(16),hy=Y(10),mx=X(200),my=Y(8);
+  c.strokeStyle=col.accent;c.lineWidth=1;c.globalAlpha=.7;
+  c.beginPath();c.moveTo(hx,hy);c.lineTo(nx,ny);c.lineTo(mx,my);c.stroke();c.globalAlpha=1;
+  const a1=Math.atan2(hy-ny,hx-nx),a2=Math.atan2(my-ny,mx-nx);
+  c.beginPath();c.arc(nx,ny,20,a2,a1,false);c.lineWidth=1.6;c.stroke();
+  // joints
+  const dot=(x,y,r0,f,st)=>{c.beginPath();c.arc(X(x),Y(y),r0,0,Math.PI*2);c.fillStyle=f;c.fill();if(st){c.strokeStyle=st;c.lineWidth=1.4;c.stroke();}};
+  dot(16,10,3,col.accent);dot(200,8,3,col.accent);
+  dot(114,r.H0,3.5,col.surface,col.muted);
+  dot(114,r.Hn,4.5,col.accent,col.surface);
+  // drop arrow
+  if(r.d>0.8){
+    const ax=X(98);c.strokeStyle=col.bad;c.fillStyle=col.bad;c.lineWidth=1.8;
+    const y0=Y(r.H0)+3,y1=Y(r.Hn)-6;
+    if(y1>y0+3){c.beginPath();c.moveTo(ax,y0);c.lineTo(ax,y1);c.stroke();c.beginPath();c.moveTo(ax,y1+5);c.lineTo(ax-4,y1-2);c.lineTo(ax+4,y1-2);c.closePath();c.fill();}
+  }
+  // labels
+  c.font='500 12px '+FONT;c.textBaseline='middle';
+  const tag=(t,x,y,color,align)=>{
+    c.textAlign=align||'left';const m=c.measureText(t).width;
+    const bx=align==='center'?x-m/2:align==='right'?x-m:x;
+    c.globalAlpha=.82;c.fillStyle=col.surface;c.fillRect(bx-3,y-8,m+6,16);c.globalAlpha=1;
+    c.fillStyle=color;c.fillText(t,x,y);
+  };
+  tag('주상골 '+r.Hn.toFixed(1)+' mm',nx,ny-17,col.ink,'center');
+  if(r.d>0.8)tag('−'+r.d.toFixed(1)+' mm',X(98)-6,(Y(r.H0)+Y(r.Hn))/2,col.bad,'right');
+  tag('아치각 '+r.ang.toFixed(0)+'°',X(196),Y(172),col.accent,'center');
+  tag('족저근막 '+Math.round(r.T)+' N',X(150),Y(0)+11,col.fascia,'center');
+  if(r.S>0)tag('인솔 '+r.S+' mm',X(120),Y(r.S*0.5),'#ffffff','center');
+  // load arrow
+  const len=clamp(r.F/900,0.05,1)*30;
+  c.strokeStyle=col.ink;c.fillStyle=col.ink;c.lineWidth=2.5;
+  const lx=X(60),ly0=Y(181),ly1=ly0+len*s*1.4+6;
+  c.beginPath();c.moveTo(lx,ly0);c.lineTo(lx,ly1);c.stroke();
+  c.beginPath();c.moveTo(lx,ly1+7);c.lineTo(lx-5,ly1-1);c.lineTo(lx+5,ly1-1);c.closePath();c.fill();
+  tag('하중 '+Math.round(r.F)+' N',lx+10,ly0+10,col.ink,'left');
+  tag('앞',X(262),Y(0)+12,col.muted,'center');
+  tag('뒤',X(-6),Y(0)+12,col.muted,'center');
+}
+
+// ---------- footprint ----------
+const heat=document.createElement('canvas');heat.width=NX;heat.height=NY;
+function drawFoot(canvas,r,f,scaleMax,opt){
+  opt=opt||{};
+  const {x:c,w,h}=fit(canvas),col=colors();
+  const rightPad=opt.mini?4:46,topPad=opt.mini?4:10,botPad=opt.mini?4:18;
+  const s=Math.min((w-rightPad-(opt.mini?4:20))/112,(h-topPad-botPad)/252);
+  const ox=(opt.mini?(w-112*s)/2:20),oy=h-botPad;
+  const X=x=>ox+x*s,Y=y=>oy-y*s;
+  // heat
+  const ctx=heat.getContext('2d'),img=ctx.createImageData(NX,NY);
+  for(let iy=0;iy<NY;iy++)for(let ix=0;ix<NX;ix++){
+    const i=iy*NX+ix;let inside=f.mask[i]===1;
+    if(!inside){for(let k=0;k<5;k++)if(toeC[k][i]>0){inside=true;break;}}
+    const o=((NY-1-iy)*NX+ix)*4;
+    if(inside){const q=cmap(f.p[i]/scaleMax);img.data[o]=q[0];img.data[o+1]=q[1];img.data[o+2]=q[2];img.data[o+3]=255;}
+  }
+  ctx.putImageData(img,0,0);
+  // zone lines
+  c.setLineDash([3,4]);c.strokeStyle=col.muted;c.lineWidth=1;c.globalAlpha=.7;
+  [62,124,186].forEach(y=>{c.beginPath();c.moveTo(X(-2),Y(y));c.lineTo(X(114),Y(y));c.stroke();});
+  c.setLineDash([]);c.globalAlpha=1;
+  c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';
+  c.drawImage(heat,X(0),Y(250),112*s,250*s);
+  // outline
+  c.strokeStyle=col.ink;c.globalAlpha=.55;c.lineWidth=1;
+  c.beginPath();let started=false;
+  for(let iy=0;iy<NY;iy++){const w0=f.rowW[iy];if(w0<=0)continue;const y=DX*iy+DX/2;if(!started){c.moveTo(X(100),Y(y));started=true;}c.lineTo(X(100),Y(y));}
+  for(let iy=NY-1;iy>=0;iy--){const w0=f.rowW[iy];if(w0<=0)continue;const y=DX*iy+DX/2;c.lineTo(X(100-w0),Y(y));}
+  c.closePath();c.stroke();
+  toeDefs.forEach(t=>{c.beginPath();c.ellipse(X(100-t[0]),Y(t[1]),t[2]*s,t[3]*s,0,0,Math.PI*2);c.stroke();});
+  c.globalAlpha=1;
+  if(opt.mini)return;
+  // peak marker
+  if(f.peak>1){
+    const px=DX*(f.peakI%NX)+DX/2,py=DX*((f.peakI/NX)|0)+DX/2;
+    c.strokeStyle='#fff';c.lineWidth=2.4;c.beginPath();c.arc(X(px),Y(py),8,0,Math.PI*2);c.stroke();
+    c.strokeStyle='#111';c.lineWidth=1;c.beginPath();c.arc(X(px),Y(py),8,0,Math.PI*2);c.stroke();
+  }
+  // zone labels
+  c.font='500 11px '+FONT;c.fillStyle=col.muted;c.textAlign='left';c.textBaseline='middle';
+  c.fillText('후족',X(2),Y(52));c.fillText('중족',X(2),Y(114));c.fillText('전족',X(2),Y(176));
+  c.textAlign='center';c.fillText('내측',X(14),oy+10);c.fillText('외측',X(92),oy+10);
+  // colorbar
+  const bx=w-30,bw=11,by=topPad,bh=h-topPad-botPad;
+  const grad=c.createLinearGradient(0,by+bh,0,by);
+  STOPS.forEach(st=>grad.addColorStop(st[0],'rgb('+st[1].join(',')+')'));
+  c.fillStyle=grad;c.fillRect(bx,by,bw,bh);c.strokeStyle=col.line;c.strokeRect(bx,by,bw,bh);
+  c.fillStyle=col.muted;c.textAlign='right';c.font='500 10.5px '+FONT;
+  [[0,0],[0.5,1],[1,2]].forEach(a=>{const v=Math.round(scaleMax*(a[0]));c.fillText(String(v),bx-3,by+bh-a[0]*bh+(a[0]===1?6:a[0]===0?-4:0));});
+  c.textAlign='center';c.fillText('kPa',bx+bw/2,by+bh+11);
+}
+
+// ---------- rear view ----------
+function drawRear(r){
+  const {x:c,w,h}=fit(cv.rear),col=colors();
+  const s=Math.min(w/150,(h-26)/150),ox=w/2,oy=h-20;
+  const X=x=>ox+x*s,Y=y=>oy-y*s;
+  c.strokeStyle=col.floor;c.lineWidth=2;c.beginPath();c.moveTo(X(-72),Y(0));c.lineTo(X(72),Y(0));c.stroke();
+  const A=64,tn=Math.tan(r.ev*Math.PI/180);
+  const sh=(x,y)=>[x+(y<A?(A-y)*tn:0),y];
+  // shank
+  c.fillStyle=col.skin;c.globalAlpha=.55;c.fillRect(X(-16),Y(150),32*s,(150-A)*s);c.globalAlpha=1;
+  c.strokeStyle=col.skinLine;c.lineWidth=1.6;
+  c.beginPath();c.moveTo(X(-16),Y(150));c.lineTo(X(-16),Y(A));c.moveTo(X(16),Y(150));c.lineTo(X(16),Y(A));c.stroke();
+  // heel silhouette
+  const L=[[-16,A],[-21,48],[-25,28],[-27,10],[-21,1]].map(p=>sh(p[0],p[1]));
+  const R=[[16,A],[21,48],[25,28],[27,10],[21,1]].map(p=>sh(p[0],p[1]));
+  const pts=L.concat([[sh(-8,0)[0],0],[sh(8,0)[0],0]],R.slice().reverse());
+  const sp=cr(pts,false,6);
+  c.beginPath();c.moveTo(X(sp[0][0]),Y(sp[0][1]));for(let i=1;i<sp.length;i++)c.lineTo(X(sp[i][0]),Y(sp[i][1]));c.closePath();
+  c.fillStyle=col.skin;c.globalAlpha=.55;c.fill();c.globalAlpha=1;c.stroke();
+  // calcaneus
+  const cal=[[-14,40],[14,40],[16,14],[-16,14]];
+  c.save();c.translate(X(0),Y(A));c.rotate(r.ev*Math.PI/180);
+  c.fillStyle=col.bone;c.strokeStyle=col.boneLine;c.lineWidth=1.2;
+  c.beginPath();c.ellipse(0,(A-30)*s,15*s,24*s,0,0,Math.PI*2);c.fill();c.stroke();c.restore();
+  // axes
+  c.setLineDash([4,4]);c.strokeStyle=col.muted;c.lineWidth=1.2;c.beginPath();c.moveTo(X(0),Y(A+60));c.lineTo(X(0),Y(0));c.stroke();c.setLineDash([]);
+  const bx=A*tn;
+  c.strokeStyle=col.accent;c.lineWidth=2.2;c.beginPath();c.moveTo(X(0),Y(A));c.lineTo(X(bx),Y(0));c.stroke();
+  const ang0=Math.PI/2,ang1=Math.PI/2-r.ev*Math.PI/180;
+  c.lineWidth=1.6;c.beginPath();c.arc(X(0),Y(A),36,Math.min(ang0,ang1),Math.max(ang0,ang1));c.stroke();
+  c.fillStyle=col.accent;c.beginPath();c.arc(X(0),Y(A),3.5,0,Math.PI*2);c.fill();
+  c.font='500 12px '+FONT;c.textBaseline='middle';
+  const lbl=(r.ev<0?'내번 ':'외번 ')+Math.abs(r.ev).toFixed(1)+'°';
+  const tw=c.measureText(lbl).width;
+  c.textAlign='left';c.globalAlpha=.85;c.fillStyle=col.surface;c.fillRect(X(0)+44-3,Y(A)-30-8,tw+6,16);c.globalAlpha=1;
+  c.fillStyle=col.accent;c.fillText(lbl,X(0)+44,Y(A)-30);
+  c.fillStyle=col.muted;c.textAlign='center';c.fillText('내측',X(-52),oy+11);c.fillText('외측',X(52),oy+11);
+  c.textAlign='left';c.fillText('다리 축',X(4),Y(A+54));
+}
+
+// ---------- chart ----------
+const METRICS={
+  ai:{label:'아치 인덱스',unit:'',dig:2,y:[0,0.4],get:o=>o.ai,zones:[[0,0.21,'높은 아치','info'],[0.21,0.26,'정상','ok'],[0.26,1,'낮은 아치','warn']],fld:true},
+  nd:{label:'주상골 하강',unit:'mm',dig:1,y:[0,22],get:o=>o.d,zones:[[0,10,'정상','ok'],[10,99,'과도','warn']]},
+  tens:{label:'족저근막 장력',unit:'N',dig:0,get:o=>o.T},
+  mid:{label:'중족부 하중 비율',unit:'%',dig:0,y:[0,30],get:o=>o.sMid*100},
+  ev:{label:'후족 외번',unit:'°',dig:1,y:[-4,14],get:o=>o.ev,zones:[[-99,0,'내번','info'],[0,6,'정상','ok'],[6,99,'과외번','warn']]},
+  peak:{label:'최대 압력',unit:'kPa',dig:0,get:o=>o.peak,fld:true}
+};
+const zoneFill={ok:'rgba(30,140,80,.12)',warn:'rgba(200,100,20,.13)',info:'rgba(50,100,200,.11)'};
+const PAD={l:50,r:14,t:14,b:34};
+function sweep(s,S0,M){
+  const xs=[],ys=[];
+  for(let H=14;H<=52;H+=2){
+    const rr=sim(Object.assign({},s,{H0:H,S:S0}));
+    const o=Object.assign({},rr);
+    if(M.fld){const ff=fp(rr);o.ai=ff.ai;o.peak=ff.peak;}
+    xs.push(H);ys.push(M.get(o));
+  }
+  return {xs,ys};
+}
+function drawChart(s,r,f){
+  const {x:c,w,h}=fit(cv.chart),col=colors(),M=METRICS[state.metric];
+  const base=sweep(s,s.S,M);
+  const ghost=s.S>0?sweep(s,0,M):null;
+  let y0,y1;
+  if(M.y){y0=M.y[0];y1=M.y[1];}
+  else{let mx=Math.max.apply(null,base.ys.concat(ghost?ghost.ys:[0]));y0=0;y1=mx>0?mx*1.15:1;}
+  const pw=w-PAD.l-PAD.r,ph=h-PAD.t-PAD.b;
+  const X=H=>PAD.l+(H-14)/38*pw,Y=v=>PAD.t+ph-(v-y0)/(y1-y0)*ph;
+  c.font='500 11px '+FONT;c.textBaseline='middle';
+  if(M.zones)M.zones.forEach(z=>{
+    const a=Math.max(z[0],y0),b=Math.min(z[1],y1);if(b<=a)return;
+    c.fillStyle=zoneFill[z[3]];c.fillRect(PAD.l,Y(b),pw,Y(a)-Y(b));
+    c.fillStyle=col.muted;c.textAlign='right';c.fillText(z[2],PAD.l+pw-6,(Y(a)+Y(b))/2);
+  });
+  // grid
+  c.strokeStyle=col.line;c.lineWidth=1;c.fillStyle=col.muted;c.textAlign='right';
+  for(let i=0;i<=4;i++){
+    const v=y0+(y1-y0)*i/4,yy=Y(v);
+    c.beginPath();c.moveTo(PAD.l,yy);c.lineTo(PAD.l+pw,yy);c.stroke();
+    c.fillText(v.toFixed(M.dig>1?2:M.dig>0?1:0),PAD.l-6,yy);
+  }
+  c.textAlign='center';
+  for(let H=14;H<=52;H+=6){c.fillText(String(H),X(H),h-PAD.b+13);}
+  c.fillText('무하중 주상골 높이 (mm)',PAD.l+pw/2,h-6);
+  c.save();c.translate(12,PAD.t+ph/2);c.rotate(-Math.PI/2);c.fillText(M.label+(M.unit?' ('+M.unit+')':''),0,0);c.restore();
+  const line=(d,color,wd,dash)=>{
+    c.beginPath();d.xs.forEach((H,i)=>{const px=X(H),py=Y(clamp(d.ys[i],y0,y1));if(i)c.lineTo(px,py);else c.moveTo(px,py);});
+    c.strokeStyle=color;c.lineWidth=wd;c.setLineDash(dash||[]);c.lineJoin='round';c.stroke();c.setLineDash([]);
+  };
+  if(ghost)line(ghost,col.muted,1.6,[5,4]);
+  line(base,col.accent,2.4);
+  // current
+  const cur=M.get(Object.assign({},r,{ai:f.ai,peak:f.peak}));
+  c.strokeStyle=col.accent;c.globalAlpha=.5;c.setLineDash([3,4]);c.beginPath();c.moveTo(X(s.H0),PAD.t);c.lineTo(X(s.H0),PAD.t+ph);c.stroke();c.setLineDash([]);c.globalAlpha=1;
+  const cx=X(s.H0),cy=Y(clamp(cur,y0,y1));
+  c.fillStyle=col.accent;c.strokeStyle=col.surface;c.lineWidth=2;c.beginPath();c.arc(cx,cy,5.5,0,Math.PI*2);c.fill();c.stroke();
+  const t=cur.toFixed(M.dig)+(M.unit?' '+M.unit:'');
+  c.font='600 12px '+FONT;const tw=c.measureText(t).width;
+  const lx=clamp(cx,PAD.l+tw/2+6,PAD.l+pw-tw/2-6),ly=cy<PAD.t+24?cy+16:cy-14;
+  c.globalAlpha=.88;c.fillStyle=col.surface;c.fillRect(lx-tw/2-4,ly-9,tw+8,18);c.globalAlpha=1;
+  c.fillStyle=col.ink;c.textAlign='center';c.fillText(t,lx,ly);
+  $('#chartCap').textContent=ghost?'점선은 인솔 서포트가 없을 때의 곡선입니다.':'굵은 선은 현재 하중·강성·인솔 조건에서의 아치 높이별 결과입니다.';
+}
+
+// ---------- tiles / text ----------
+function peakWhere(f){
+  const y=DX*((f.peakI/NX)|0)+DX/2;
+  return y<62?'뒤꿈치':y<124?'중족부':y<186?'전족부':'발가락';
+}
+function updateTiles(r,f){
+  const cls=classAI(f.ai);
+  const ndB=r.d<10?['ok','정상 (10 mm 미만)']:['warn','과도 (10 mm 이상)'];
+  const evB=r.ev<0?['info','내번']:r.ev>6?['warn','과외번']:['ok','정상'];
+  const items=[
+    ['하중 시 주상골 높이',r.Hn.toFixed(1),'mm','<span>무하중 '+r.H0.toFixed(0)+' mm</span>'],
+    ['주상골 하강',r.d.toFixed(1),'mm','<span class="badge '+ndB[0]+'">'+ndB[1]+'</span>'],
+    ['아치 인덱스',f.ai.toFixed(2),'','<span class="badge '+cls.tone+'">'+cls.t+'</span>'],
+    ['아치각',r.ang.toFixed(0),'°','<span>뒤꿈치–주상골–1중족골두</span>'],
+    ['후족 정렬',Math.abs(r.ev).toFixed(1),'°','<span class="badge '+evB[0]+'">'+evB[1]+'</span>'],
+    ['족저근막 장력',Math.round(r.T).toString(),'N','<span>체중의 '+(r.T/r.BW*100).toFixed(0)+'%</span>'],
+    ['접촉 면적',f.areaCm2.toFixed(0),'cm²','<span>발가락 포함</span>'],
+    ['최대 압력',Math.round(f.peak).toString(),'kPa','<span>'+(f.peak>1?peakWhere(f):'-')+'</span>']
+  ];
+  $('#tiles').innerHTML=items.map(i=>'<div class="tile"><div class="k">'+i[0]+'</div><div class="v num">'+i[1]+'<small>'+i[2]+'</small></div><div class="s">'+i[3]+'</div></div>').join('');
+  const seg=[[r.sHeel,'#2f6fb5'],[r.sMid,'#2f9e6a'],[r.sFore,'#c9871a'],[r.sToe,'#a2453f']];
+  $('#stack').innerHTML=seg.map(a=>'<div style="width:'+(a[0]*100).toFixed(1)+'%;background:'+a[1]+'">'+(a[0]>=0.06?Math.round(a[0]*100)+'%':'')+'</div>').join('');
+  $('#distTxt').textContent='뒤꿈치 '+Math.round(r.sHeel*100)+' · 중족부 '+Math.round(r.sMid*100)+' · 전족부 '+Math.round(r.sFore*100)+' · 발가락 '+Math.round(r.sToe*100)+' (%)';
+}
+function updateNotes(s,r,f){
+  const out=[],cls=classAI(f.ai),hp=Math.round(r.sHeel*100),mp=Math.round(r.sMid*100),fo=Math.round(r.sFore*100);
+  if(r.F<20){out.push(['info','하중이 거의 없어 발의 변화가 나타나지 않습니다. 한 발에 걸리는 하중을 올려 보세요.']);}
+  else if(f.ai<0.21){
+    out.push(['info','<b>높은 아치 경향</b> — 중족부가 거의 바닥에 닿지 않아 하중의 '+mp+'%만 중족부로 전달되고, 뒤꿈치 '+hp+'%와 전족부 '+fo+'%에 집중됩니다. 아치가 단단해 주상골 하강은 '+r.d.toFixed(1)+' mm에 그치고, 최대 압력은 '+peakWhere(f)+'에서 '+Math.round(f.peak)+' kPa까지 올라갑니다. 충격 흡수가 적어 뒤꿈치·중족골두 과부하 쪽으로 기우는 모습입니다.']);
+  }else if(f.ai>0.26){
+    out.push(['warn','<b>낮은 아치 경향</b> — 주상골이 '+r.d.toFixed(1)+' mm 내려앉아 중족부가 바닥에 닿고 하중의 '+mp+'%를 받습니다. 후족 외번은 '+r.ev.toFixed(1)+'°, 족저근막 장력은 '+Math.round(r.T)+' N(체중의 '+(r.T/r.BW*100).toFixed(0)+'%)로 늘어, 근막과 내측 지지 구조에 걸리는 부담이 커지는 방향입니다.']);
+  }else{
+    out.push(['ok','<b>정상 범위</b> — 주상골 하강 '+r.d.toFixed(1)+' mm, 아치 인덱스 '+f.ai.toFixed(2)+'로 하중이 뒤꿈치 '+hp+'% · 중족부 '+mp+'% · 전족부 '+fo+'%로 고르게 나뉩니다.']);
+  }
+  if(r.d>=10&&f.ai<=0.26)out.push(['warn','주상골 하강이 '+r.d.toFixed(1)+' mm로 10 mm를 넘었습니다. 발자국은 정상이어도 하중 시 아치가 크게 움직이는 유연한 발일 수 있습니다.']);
+  if(s.S>0){
+    const b=sim(Object.assign({},s,{S:0})),bf=fp(b);
+    const dd=r.d-b.d,dT=r.T-b.T,dP=f.peak-bf.peak;
+    out.push(['ok','<b>인솔 효과 ('+s.S+' mm)</b> — 인솔이 없을 때보다 주상골 하강 '+(dd<=0?'−':'+')+Math.abs(dd).toFixed(1)+' mm, 족저근막 장력 '+(dT<=0?'−':'+')+Math.abs(Math.round(dT))+' N, 최대 압력 '+(dP<=0?'−':'+')+Math.abs(Math.round(dP))+' kPa 변화. 중족부 접촉이 늘어 하중이 아치로 일부 옮겨 갑니다.']);
+  }
+  if(s.toe>0)out.push(['info','<b>윈들러스 효과</b> — 발가락을 '+Math.round(s.toe)+'° 젖히면 족저근막이 감겨 아치가 올라가고 하강이 줄어듭니다. 대신 근막 장력은 높아집니다.']);
+  if(s.loadPct>=200)out.push(['warn','달리기 착지처럼 하중이 큰 구간입니다. 같은 발이라도 하중이 커질수록 아치 하강과 최대 압력이 빠르게 증가합니다.']);
+  $('#notes').innerHTML=out.map(o=>'<div class="note '+(o[0]==='info'?'':o[0])+'">'+o[1]+'</div>').join('');
+}
+const PRESETS=[{H0:48,stiff:1.25,name:'높은 아치'},{H0:38,stiff:1,name:'정상'},{H0:26,stiff:0.65,name:'낮은 아치'}];
+function drawCompare(s){
+  const rs=PRESETS.map(p=>sim(Object.assign({},s,{H0:p.H0,stiff:p.stiff})));
+  const fs=rs.map(fp);
+  const mx=Math.max(100,Math.ceil(Math.max.apply(null,fs.map(f=>f.peak))*1.1/50)*50);
+  const figs=document.querySelectorAll('#cmp figure');
+  let near=0,bd=1e9;
+  PRESETS.forEach((p,i)=>{const dd=Math.abs(p.H0-s.H0)+Math.abs(p.stiff-s.stiff)*10;if(dd<bd){bd=dd;near=i;}});
+  figs.forEach((fg,i)=>{
+    drawFoot(fg.querySelector('canvas'),rs[i],fs[i],mx,{mini:true});
+    const cl=classAI(fs[i].ai);
+    fg.querySelector('figcaption').innerHTML='<b>'+PRESETS[i].name+' (H0 '+PRESETS[i].H0+' mm)</b><span class="num">AI '+fs[i].ai.toFixed(2)+' · 하강 '+rs[i].d.toFixed(1)+' mm</span><br><span class="num">최대 '+Math.round(fs[i].peak)+' kPa</span>';
+    fg.classList.toggle('cur',bd<=2.5&&i===near);
+  });
+}
+
+// ---------- render ----------
+function vgrf(t){return Math.pow(Math.sin(Math.PI*t),0.4)*(0.8+0.4*Math.pow(Math.sin(2*Math.PI*t),2));}
+function eff(){
+  if(!state.playing)return state;
+  const t=Math.min(state.t,1);
+  return Object.assign({},state,{loadPct:100*vgrf(t),toe:t<0.97?50*sstep((t-0.55)/0.3):0});
+}
+function render(heavy){
+  const s=eff(),r=sim(s),f=fp(r);
+  const mx=state.playing?350:Math.max(100,Math.ceil(f.peak*1.1/50)*50);
+  drawSide(r);drawFoot(cv.foot,r,f,mx);drawRear(r);updateTiles(r,f);
+  if(heavy){drawCompare(s);drawChart(s,r,f);updateNotes(s,r,f);}
+}
+let pend=false;
+function schedule(){if(pend)return;pend=true;requestAnimationFrame(()=>{pend=false;render(true);});}
+
+// ---------- controls ----------
+const sl={H:$('#sH'),K:$('#sK'),M:$('#sM'),L:$('#sL'),S:$('#sS'),T:$('#sT')};
+function syncOut(){
+  $('#oH').textContent=state.H0+' mm';
+  $('#oK').textContent='×'+state.stiff.toFixed(2);
+  $('#oM').textContent=state.mass+' kg';
+  $('#oL').textContent=state.loadPct+'% ('+Math.round(state.mass*9.81*state.loadPct/100)+' N)';
+  $('#oS').textContent=state.S+' mm';
+  $('#oT').textContent=state.toe+'°';
+}
+function bind(el,key,conv){el.addEventListener('input',()=>{state[key]=conv(el.value);syncOut();schedule();});}
+bind(sl.H,'H0',Number);bind(sl.K,'stiff',Number);bind(sl.M,'mass',Number);bind(sl.L,'loadPct',Number);bind(sl.S,'S',Number);bind(sl.T,'toe',Number);
+function setH0(v){state.H0=clamp(Math.round(v),14,52);sl.H.value=state.H0;syncOut();schedule();}
+$('#presets').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  state.H0=Number(b.dataset.h);state.stiff=Number(b.dataset.k);
+  sl.H.value=state.H0;sl.K.value=state.stiff;syncOut();schedule();
+});
+$('#loads').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  state.loadPct=Number(b.dataset.l);sl.L.value=state.loadPct;syncOut();schedule();
+});
+// metric buttons
+$('#metricSeg').innerHTML=Object.keys(METRICS).map(k=>'<button data-m="'+k+'" class="'+(k===state.metric?'on':'')+'">'+METRICS[k].label+'</button>').join('');
+$('#metricSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  state.metric=b.dataset.m;
+  document.querySelectorAll('#metricSeg button').forEach(x=>x.classList.toggle('on',x===b));
+  schedule();
+});
+// chart pointer
+function chartPick(e){
+  const rc=cv.chart.getBoundingClientRect();
+  const H=14+((e.clientX-rc.left)-PAD.l)/(rc.width-PAD.l-PAD.r)*38;
+  setH0(H);
+}
+cv.chart.addEventListener('pointerdown',e=>{cv.chart.setPointerCapture(e.pointerId);chartPick(e);});
+cv.chart.addEventListener('pointermove',e=>{if(e.buttons)chartPick(e);});
+cv.chart.addEventListener('keydown',e=>{
+  if(e.key==='ArrowLeft'||e.key==='ArrowDown'){setH0(state.H0-1);e.preventDefault();}
+  if(e.key==='ArrowRight'||e.key==='ArrowUp'){setH0(state.H0+1);e.preventDefault();}
+});
+// animation
+let raf=0,last=0,lastHeavy=0;
+function loop(ts){
+  if(!state.playing)return;
+  const dt=Math.min(0.1,(ts-last)/1000);last=ts;
+  state.t+=dt/2.6;if(state.t>1.2)state.t=0;
+  const t=Math.min(state.t,1);
+  const heavy=ts-lastHeavy>220;if(heavy)lastHeavy=ts;
+  render(heavy);
+  $('#stageBar').style.width=(t*100).toFixed(0)+'%';
+  $('#stageTxt').textContent='입각기 '+Math.round(t*100)+'% · 하중 '+Math.round(100*vgrf(t))+'% · 발가락 '+Math.round(t<0.97?50*sstep((t-0.55)/0.3):0)+'°';
+  raf=requestAnimationFrame(loop);
+}
+$('#play').addEventListener('click',()=>{
+  state.playing=!state.playing;
+  const b=$('#play');b.textContent=state.playing?'정지':'재생';b.classList.toggle('on',state.playing);b.setAttribute('aria-pressed',state.playing);
+  sl.L.disabled=state.playing;sl.T.disabled=state.playing;
+  if(state.playing){state.t=0;last=performance.now();raf=requestAnimationFrame(loop);}
+  else{cancelAnimationFrame(raf);$('#stageBar').style.width='0';$('#stageTxt').textContent='하중과 발가락 젖힘이 입각기 곡선을 따라 변합니다.';render(true);}
+});
+window.addEventListener('resize',schedule);
+try{window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',schedule);}catch(e){}
+syncOut();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(schedule);
+render(true);
+</script>
+</body>
+</html>
