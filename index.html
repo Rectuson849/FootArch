@@ -97,6 +97,19 @@ details{margin-top:16px;font-size:13px;color:var(--muted)}
 details summary{cursor:pointer;color:var(--ink);font-weight:500}
 details ul{margin:8px 0 0;padding-left:18px}
 .disc{font-size:12px;color:var(--muted);margin-top:14px}
+.mrow{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:0 0 10px;font-size:13px}
+.mrow label{display:inline-flex;gap:6px;align-items:center}
+.mrow input[type=number]{width:72px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface2);color:var(--ink);font:inherit}
+.mrow select{padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface2);color:var(--ink);font:inherit}
+.merr{color:var(--bad);font-size:13px;margin:0 0 8px}
+.meas{display:grid;grid-template-columns:minmax(0,240px) 1fr;gap:16px;align-items:start;margin-top:6px}
+@media (max-width:720px){.meas{grid-template-columns:1fr}}
+#cvMeas{max-width:240px;border:1px solid var(--line);border-radius:6px;background:var(--surface2)}
+.mtab{width:100%;border-collapse:collapse;font-size:13px}
+.mtab th,.mtab td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:right}
+.mtab th:first-child,.mtab td:first-child{text-align:left}
+.mtab th{color:var(--muted);font-weight:500}
+.mtab td.d{color:var(--muted)}
 @media (prefers-reduced-motion:reduce){.stack div{transition:none}}
 </style>
 </head>
@@ -104,7 +117,7 @@ details ul{margin:8px 0 0;padding-left:18px}
 <div class="wrap">
   <header class="top">
     <div>
-      <h1>발 아치 높이 시뮬레이터 <small class="num" id="ver" style="font-size:13px;font-weight:500;color:var(--muted)">Ver0.0.2</small></h1>
+      <h1>발 아치 높이 시뮬레이터 <small class="num" id="ver" style="font-size:13px;font-weight:500;color:var(--muted)">Ver0.0.3</small></h1>
       <p class="sub">내측 종아치 높이를 바꾸면 하중을 받을 때 아치가 얼마나 내려앉고, 족저압과 후족 정렬이 어떻게 달라지는지 실험합니다.</p>
     </div>
   </header>
@@ -214,6 +227,40 @@ details ul{margin:8px 0 0;padding-left:18px}
       </div>
 
       <div class="notes" id="notes" aria-live="polite"></div>
+
+      <section class="card section" id="measCard">
+        <h2>측정 데이터 불러오기 (CSV)<small>족저압 장비의 압력 격자를 시뮬레이션과 비교합니다</small></h2>
+        <div class="mrow">
+          <input type="file" id="mFile" accept=".csv,.txt,.tsv" aria-label="압력 데이터 CSV 파일">
+          <button id="mSample">현재 시뮬레이션 결과로 예시 불러오기</button>
+          <button id="mClear">지우기</button>
+        </div>
+        <div class="mrow">
+          <label>센서 간격 <input type="number" id="mCell" value="5" min="0.5" max="20" step="0.1"> mm</label>
+          <label>단위 <select id="mUnit"><option value="1">kPa</option><option value="10">N/cm²</option><option value="0.001">Pa</option></select></label>
+          <label>접촉 문턱값 <input type="number" id="mThr" value="10" min="0" step="1"> kPa</label>
+          <label><input type="checkbox" id="mFlipR"> 첫 행이 발가락 쪽</label>
+          <label><input type="checkbox" id="mFlipC"> 왼쪽 열이 외측 쪽</label>
+        </div>
+        <div class="merr" id="mErr" role="alert"></div>
+        <div class="meas" id="mWrap" style="display:none">
+          <div><canvas id="cvMeas" role="img" aria-label="불러온 압력 데이터 지도"></canvas><p class="cap" id="mCap"></p></div>
+          <div>
+            <table class="mtab" id="mTable"></table>
+            <p class="cap" id="mInfo"></p>
+            <button id="mApplyLen">측정 발 길이를 입력에 반영</button>
+          </div>
+        </div>
+        <details>
+          <summary>CSV 형식</summary>
+          <ul>
+            <li>숫자만 있는 줄을 압력 격자로 읽습니다. 쉼표, 세미콜론, 탭, 공백으로 구분할 수 있고, 숫자가 아닌 줄(머리글)은 무시합니다.</li>
+            <li>한 줄이 격자의 한 행이며, 기본은 첫 행이 뒤꿈치 쪽, 첫 열이 내측인 오른발입니다. 장비가 다르면 위 체크박스로 맞추세요. 왼발 데이터는 왼쪽 열이 외측이므로 "왼쪽 열이 외측 쪽"을 켜세요.</li>
+            <li>열 수가 가장 흔한 줄과 다른 줄은 건너뜁니다. 센서 간격과 단위를 장비 설명서대로 입력해야 면적과 압력이 맞습니다.</li>
+            <li>발 길이는 접촉이 있는 행의 범위로 구하고, 앞쪽 25%씩 뒤꿈치·중족부·전족부·발가락 영역으로 나눕니다.</li>
+          </ul>
+        </details>
+      </section>
 
       <section class="card section">
         <h2>세 가지 아치 비교<small>같은 체중·하중·인솔 조건, 같은 색 스케일</small></h2>
@@ -718,6 +765,122 @@ function drawCompare(s){
   });
 }
 
+// ---------- measured data (CSV) ----------
+let lastSim=null,mdata=null,mname='';
+function parseMatrix(text){
+  text=text.replace(/^﻿/,'');
+  const semi=/[;\t]/.test(text),rows=[];
+  for(const line of text.split(/\r?\n/)){
+    const s=line.trim();if(!s)continue;
+    const tok=(semi?s.replace(/,/g,'.').split(/[;\t]+/):s.split(/[,\s]+/)).map(x=>x.trim().replace(/^"|"$/g,"")).filter(x=>x!=="");
+    if(tok.length<2)continue;
+    const nums=tok.map(Number);
+    if(nums.some(v=>!isFinite(v)))continue;
+    rows.push(nums);
+  }
+  if(!rows.length)return null;
+  const cnt={};rows.forEach(r=>{cnt[r.length]=(cnt[r.length]||0)+1;});
+  const cols=+Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];
+  const good=rows.filter(r=>r.length===cols);
+  return {g:Float32Array.from(good.flat()),rows:good.length,cols,skipped:rows.length-good.length};
+}
+function mOpts(){
+  return {cell:Math.max(0.1,Number($('#mCell').value)||5),k:Number($('#mUnit').value),thr:Math.max(0,Number($('#mThr').value)||0),flipR:$('#mFlipR').checked,flipC:$('#mFlipC').checked};
+}
+function measStats(m,o){
+  const R=m.rows,C=m.cols,p=new Float32Array(R*C);
+  for(let r=0;r<R;r++)for(let c=0;c<C;c++){
+    const sr=o.flipR?R-1-r:r,sc=o.flipC?C-1-c:c;
+    p[r*C+c]=m.g[sr*C+sc]*o.k;
+  }
+  let r0=R,r1=-1,c0=C,c1=-1,peak=0,pk=0,cnt=0;
+  for(let i=0;i<R*C;i++){
+    const v=p[i];
+    if(v>peak){peak=v;pk=i;}
+    if(v>=o.thr){const r=(i/C)|0,c=i%C;if(r<r0)r0=r;if(r>r1)r1=r;if(c<c0)c0=c;if(c>c1)c1=c;cnt++;}
+  }
+  if(r1<0)return null;
+  const span=r1-r0+1,cA=o.cell*o.cell,zc=[0,0,0,0],zf=[0,0,0,0];
+  for(let r=r0;r<=r1;r++){
+    const fr=(r-r0+0.5)/span,z=fr<0.25?0:fr<0.5?1:fr<0.75?2:3;
+    for(let c=0;c<C;c++){const v=p[r*C+c];if(v<o.thr)continue;zc[z]++;zf[z]+=v*1e-3*cA;}
+  }
+  const F=zf[0]+zf[1]+zf[2]+zf[3],den=zc[0]+zc[1]+zc[2];
+  return {p,R,C,cell:o.cell,thr:o.thr,peak,pk,area:cnt*cA/100,ai:den?zc[1]/den:0,share:zf.map(v=>F>0?v/F:0),F,L:span*o.cell,W:(c1-c0+1)*o.cell};
+}
+function drawMeas(st,mx){
+  const cv=$('#cvMeas');
+  cv.style.aspectRatio=clamp(st.C/st.R,0.3,1.5).toFixed(3);
+  const {x:c,w,h}=fit(cv),col=colors();
+  const s=Math.min(w/st.C,h/st.R),ox=(w-st.C*s)/2,oy=h-(h-st.R*s)/2;
+  for(let r=0;r<st.R;r++)for(let q=0;q<st.C;q++){
+    const v=st.p[r*st.C+q];if(v<st.thr)continue;
+    const k=cmap(v/mx);c.fillStyle='rgb('+k.map(Math.round).join(',')+')';
+    c.fillRect(ox+q*s,oy-(r+1)*s,s+0.6,s+0.6);
+  }
+  if(st.peak>0){
+    const px=ox+((st.pk%st.C)+0.5)*s,py=oy-(((st.pk/st.C)|0)+0.5)*s;
+    c.strokeStyle='#fff';c.lineWidth=2.4;c.beginPath();c.arc(px,py,8,0,Math.PI*2);c.stroke();
+    c.strokeStyle='#111';c.lineWidth=1;c.beginPath();c.arc(px,py,8,0,Math.PI*2);c.stroke();
+  }
+  c.font='500 11px '+FONT;c.fillStyle=col.muted;c.textAlign='left';c.textBaseline='top';
+  c.fillText('내측',4,4);c.textAlign='right';c.fillText('외측',w-4,4);
+}
+function updateMeasured(){
+  const wrap=$('#mWrap'),err=$('#mErr');
+  if(!mdata){wrap.style.display='none';return;}
+  const o=mOpts(),st=measStats(mdata,o);
+  if(!st){wrap.style.display='none';err.textContent='압력이 문턱값 이상인 셀이 없습니다. 단위나 접촉 문턱값을 확인하세요.';return;}
+  err.textContent='';wrap.style.display='';
+  const sim=lastSim,r=sim&&sim.r,f=sim&&sim.f;
+  const mx=Math.max(50,Math.ceil(Math.max(st.peak,f?f.peak:0)*1.1/50)*50);
+  drawMeas(st,mx);
+  $('#mCap').textContent='색 범위 0–'+mx+' kPa (시뮬레이션과 같은 스케일)';
+  const rowsT=[
+    ['아치 인덱스',st.ai,f&&f.ai,2,''],
+    ['접촉 면적',st.area,f&&f.areaCm2,0,'cm²'],
+    ['최대 압력',st.peak,f&&f.peak,0,'kPa'],
+    ['뒤꿈치 하중',st.share[0]*100,r&&r.sHeel*100,0,'%'],
+    ['중족부 하중',st.share[1]*100,r&&r.sMid*100,0,'%'],
+    ['전족부 하중',st.share[2]*100,r&&r.sFore*100,0,'%'],
+    ['발가락 하중',st.share[3]*100,r&&r.sToe*100,0,'%'],
+    ['총 하중',st.F,r&&r.F,0,'N'],
+    ['발 길이',st.L,r&&r.len,0,'mm']
+  ];
+  $('#mTable').innerHTML='<tr><th></th><th>측정</th><th>시뮬레이션</th><th>차이</th></tr>'+rowsT.map(a=>{
+    const d=a[2]==null?"":(a[1]-a[2]>=0?'+':'−')+Math.abs(a[1]-a[2]).toFixed(a[3]);
+    return '<tr><td>'+a[0]+'</td><td class="num">'+a[1].toFixed(a[3])+' '+a[4]+'</td><td class="num">'+(a[2]==null?'-':a[2].toFixed(a[3])+' '+a[4])+'</td><td class="num d">'+d+'</td></tr>';
+  }).join("");
+  let info=(mname?mname+' · ':"")+st.R+'×'+st.C+' 셀, 발 길이(접촉 구간) '+Math.round(st.L)+' mm, 폭 '+Math.round(st.W)+' mm.';
+  if(mdata.skipped)info+=' 열 수가 달라 건너뛴 줄 '+mdata.skipped+'개.';
+  if(r&&Math.abs(st.F-r.F)/Math.max(r.F,1)>0.3)info+=' 측정 총 하중이 시뮬레이션과 30% 넘게 다릅니다. 단위·센서 간격 또는 체중·하중 조건을 확인하세요.';
+  $('#mInfo').textContent=info;
+}
+function loadMatrix(text,name){
+  const m=parseMatrix(text),err=$('#mErr');
+  if(!m||m.rows<8||m.cols<4){mdata=null;err.textContent='압력 격자를 찾지 못했습니다. 숫자만 있는 줄이 8행·4열 이상 필요합니다.';$('#mWrap').style.display='none';return;}
+  if(m.rows*m.cols>400000){mdata=null;err.textContent='격자가 너무 큽니다(최대 40만 셀).';$('#mWrap').style.display='none';return;}
+  mdata=m;mname=name;err.textContent='';updateMeasured();
+}
+$('#mFile').addEventListener('change',e=>{
+  const fl=e.target.files[0];if(!fl)return;
+  if(fl.size>20e6){$('#mErr').textContent='파일이 너무 큽니다(최대 20 MB).';return;}
+  fl.text().then(tx=>loadMatrix(tx,fl.name),()=>{$('#mErr').textContent='파일을 읽지 못했습니다.';});
+});
+['#mCell','#mUnit','#mThr','#mFlipR','#mFlipC'].forEach(id=>$(id).addEventListener('input',updateMeasured));
+$('#mSample').addEventListener('click',()=>{
+  if(!lastSim)return;
+  const p=lastSim.f.p,out=[];
+  for(let iy=0;iy<NY;iy++){const row=[];for(let ix=0;ix<NX;ix++)row.push(p[iy*NX+ix].toFixed(1));out.push(row.join(','));}
+  $('#mCell').value=DX;$('#mUnit').value='1';$('#mThr').value=1;$('#mFlipR').checked=false;$('#mFlipC').checked=false;
+  loadMatrix(out.join('\n'),'현재 시뮬레이션 결과(예시)');
+});
+$('#mClear').addEventListener('click',()=>{mdata=null;mname='';$('#mFile').value='';$('#mErr').textContent='';updateMeasured();});
+$('#mApplyLen').addEventListener('click',()=>{
+  if(!mdata)return;const st=measStats(mdata,mOpts());if(!st)return;
+  state.len=clamp(Math.round(st.L),200,300);sl.F.value=state.len;syncOut();schedule();
+});
+
 // ---------- render ----------
 function vgrf(t){return Math.pow(Math.sin(Math.PI*t),0.4)*(0.8+0.4*Math.pow(Math.sin(2*Math.PI*t),2));}
 function eff(){
@@ -729,7 +892,7 @@ function render(heavy){
   const s=eff(),r=sim(s),f=fp(r);
   const mx=state.playing?350:Math.max(100,Math.ceil(f.peak*1.1/50)*50);
   drawSide(r);drawFoot(cv.foot,r,f,mx);drawRear(r);updateTiles(r,f);
-  if(heavy){drawCompare(s);drawChart(s,r,f);updateNotes(s,r,f);}
+  if(heavy){drawCompare(s);drawChart(s,r,f);updateNotes(s,r,f);lastSim={r,f};updateMeasured();}
 }
 let pend=false;
 function schedule(){if(pend)return;pend=true;requestAnimationFrame(()=>{pend=false;render(true);});}
