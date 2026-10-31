@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>발 측정 기록</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e8ecf0; --surface:#f8fafb; --surface2:#eef2f5; --ink:#13202e; --muted:#566475; --line:#cbd5de;
+  --accent:#0b6e99; --accent-ink:#ffffff; --ok:#13794a; --warn:#b4540a; --bad:#b42323;
+  color-scheme:light;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1218; --surface:#151c25; --surface2:#1c2530; --ink:#e6ebf1; --muted:#97a3b3; --line:#2a3544;
+    --accent:#4cc3f0; --accent-ink:#04202c; --ok:#4ade80; --warn:#fb923c; --bad:#f87171;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1218; --surface:#151c25; --surface2:#1c2530; --ink:#e6ebf1; --muted:#97a3b3; --line:#2a3544;
+  --accent:#4cc3f0; --accent-ink:#04202c; --ok:#4ade80; --warn:#fb923c; --bad:#f87171;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans KR","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;line-height:1.6;-webkit-text-size-adjust:100%}
+.num{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:1040px;margin:0 auto;padding:20px 16px 48px}
+header.top{display:flex;flex-wrap:wrap;gap:6px 24px;align-items:baseline;justify-content:space-between;margin-bottom:16px}
+h1{font-size:26px;line-height:1.2;margin:0;font-weight:700}
+h1 small{font-size:13px;font-weight:500;color:var(--muted);margin-left:6px}
+.sub{color:var(--muted);font-size:14px;margin:4px 0 0}
+a{color:var(--accent)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:16px}
+.card h2{font-size:16px;margin:0 0 10px}
+.card h3{font-size:14px;margin:14px 0 4px}
+ol.steps{margin:0;padding-left:20px}
+ol.steps>li{margin:0 0 12px}
+ol.steps b{font-weight:600}
+.tip{font-size:13px;color:var(--muted);margin:2px 0 0}
+.warn{border-left:3px solid var(--warn);background:var(--surface2);padding:8px 12px;border-radius:0 8px 8px 0;font-size:13.5px;margin-top:12px}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px 16px}
+.f label{display:block;font-size:13px;font-weight:500;margin-bottom:3px}
+.f label i{font-style:normal;color:var(--muted);font-weight:400}
+.f input,.f select,.f textarea{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);color:var(--ink);font:inherit;font-size:14px}
+.f textarea{resize:vertical;min-height:38px}
+.f.wide{grid-column:1/-1}
+.calc{font-size:13.5px;color:var(--accent);font-weight:600;min-height:22px}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+button,a.btn{font:inherit;font-size:13px;padding:7px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface2);color:var(--ink);cursor:pointer;text-decoration:none;display:inline-block}
+button:hover,a.btn:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button.danger{color:var(--bad)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.msg{font-size:13px;margin-top:8px;min-height:20px}
+.msg.err{color:var(--bad)}.msg.ok{color:var(--ok)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:820px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{color:var(--muted);font-weight:500}
+th:first-child,td:first-child,td.l,th.l{text-align:left}
+td.memo{white-space:normal;text-align:left;min-width:120px;max-width:240px}
+td.out{color:var(--warn)}
+.empty{color:var(--muted);font-size:14px;padding:8px 0}
+.rowbtns{display:flex;gap:6px;justify-content:flex-end}
+.rowbtns button,.rowbtns a.btn{padding:3px 8px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>발 측정 기록 <small class="num">Ver0.0.4</small></h1>
+      <p class="sub">측정하는 방법을 확인하고, 측정값을 기록해 시뮬레이터에 바로 적용합니다.</p>
+    </div>
+    <a class="btn" href="index.html">← 시뮬레이터로 돌아가기</a>
+  </header>
+
+  <section class="card">
+    <h2>측정하는 방법</h2>
+    <p class="tip" style="margin-top:0">준비물: 체중계, 150 mm 이상 디지털 캘리퍼스, 30 cm 이상의 자(또는 줄자), 종이, 펜, 벽, 단단한 평지. 모든 측정은 맨발로, 같은 시간대에 하고 3회 재서 평균을 기록하세요.</p>
+    <ol class="steps">
+      <li><b>체중</b>
+        <div class="tip">가벼운 옷차림으로 체중계에 올라 kg 단위로 기록합니다.</div></li>
+      <li><b>발 길이</b>
+        <div class="tip">종이를 벽에 붙이고 뒤꿈치를 벽에 댄 채 체중을 실어 섭니다. 가장 긴 발가락 끝 위치를 종이에 표시하고, 벽에서 그 표시까지 거리를 mm로 잽니다. Brannock Device의 길이 눈금은 신발 사이즈 단위이므로 mm 값을 직접 재세요.</div></li>
+      <li><b>스팬 (아치 길이)</b>
+        <div class="tip">같은 종이에서 뒤꿈치 끝부터 엄지발가락 아래쪽 튀어나온 뼈(1중족골두, 발볼의 안쪽 가장 넓은 부분) 중심까지의 거리를 잽니다. 이 값이 시뮬레이터의 스팬입니다.</div></li>
+      <li><b>아치 높이 (앉은 자세, 무하중)</b>
+        <div class="tip">의자에 앉아 발바닥 전체를 바닥에 가볍게 붙이고 체중은 싣지 않습니다. 발 안쪽 복사뼈 앞아래에 튀어나온 뼈(주상골 결절)를 손으로 찾아 표시한 뒤, 바닥에서 그 표시까지 수직 높이를 캘리퍼스(깊이 막대)나 직각 자로 잽니다. 이 값이 시뮬레이터의 "아치 높이"입니다.</div></li>
+      <li><b>아치 높이 (선 자세, 하중)</b>
+        <div class="tip">같은 표시를 유지한 채 양발에 체중을 반씩 싣고 편하게 서서 같은 높이를 잽니다. <b>주상골 하강 = 앉은 높이 − 선 높이</b>이며, 이 페이지가 자동 계산합니다. 시뮬레이터의 주상골 하강 값과 비교해 보세요.</div></li>
+      <li><b>아치 인덱스 (선택)</b>
+        <div class="tip">발자국을 찍어(잉크, 물, 온도 색깔 시트 등) 발가락을 뺀 발자국을 길이 방향으로 3등분합니다. <b>가운데 부분 면적 ÷ (뒤·가운데·앞 세 부분 면적의 합)</b>이 아치 인덱스입니다.</div></li>
+      <li><b>족저압 (선택)</b>
+        <div class="tip">족저압 장비가 있으면 압력 격자를 CSV로 내보내 시뮬레이터의 "측정 데이터 불러오기"에서 비교합니다.</div></li>
+    </ol>
+    <div class="warn">주상골 결절은 손으로 찾기 때문에 측정자에 따라 1~2 mm 오차가 날 수 있습니다. 표시를 지우지 말고, 같은 사람이 같은 방법으로 반복해서 재는 것이 좋습니다. 이 도구는 교육용이며 진단에 쓸 수 없습니다.</div>
+  </section>
+
+  <section class="card">
+    <h2 id="formTitle">측정값 기록</h2>
+    <form id="form" class="form" autocomplete="off" novalidate>
+      <div class="f"><label for="fDate">측정일</label><input type="date" id="fDate" required></div>
+      <div class="f"><label for="fLabel">이름·구분 <i>(선택)</i></label><input type="text" id="fLabel" maxlength="40" placeholder="예: 본인, 오전"></div>
+      <div class="f"><label for="fSide">측정한 발</label><select id="fSide"><option value="오른발">오른발</option><option value="왼발">왼발</option></select></div>
+      <div class="f"><label for="fW">체중 <i>(kg)</i></label><input type="number" id="fW" min="20" max="200" step="0.1" required></div>
+      <div class="f"><label for="fL">발 길이 <i>(mm)</i></label><input type="number" id="fL" min="150" max="350" step="0.5" required></div>
+      <div class="f"><label for="fS">스팬 <i>(mm)</i></label><input type="number" id="fS" min="100" max="260" step="0.5" required></div>
+      <div class="f"><label for="fHs">아치 높이, 앉은 자세 <i>(mm)</i></label><input type="number" id="fHs" min="5" max="80" step="0.1" required></div>
+      <div class="f"><label for="fHt">아치 높이, 선 자세 <i>(mm, 선택)</i></label><input type="number" id="fHt" min="5" max="80" step="0.1"></div>
+      <div class="f"><label for="fAI">아치 인덱스 <i>(0~1, 선택)</i></label><input type="number" id="fAI" min="0" max="1" step="0.01"></div>
+      <div class="f wide"><label for="fMemo">메모 <i>(선택)</i></label><textarea id="fMemo" maxlength="200" rows="2" placeholder="측정 조건, 사용한 장비 등"></textarea></div>
+      <div class="f wide"><div class="calc" id="calc"></div></div>
+    </form>
+    <div class="btnrow">
+      <button class="primary" id="btnSave" type="button">기록 저장</button>
+      <button id="btnReset" type="button">입력 지우기</button>
+    </div>
+    <div class="msg" id="msg" role="status"></div>
+  </section>
+
+  <section class="card">
+    <h2>기록 목록 <small class="num" id="count" style="font-weight:400;color:var(--muted)"></small></h2>
+    <div class="tablewrap" id="tableWrap"></div>
+    <div class="btnrow">
+      <button id="btnCsv" type="button">CSV로 저장</button>
+      <button id="btnClear" class="danger" type="button">전체 삭제</button>
+    </div>
+    <p class="tip">기록은 이 브라우저의 저장공간(localStorage)에만 저장되며 서버로 전송되지 않습니다. 브라우저 데이터를 지우거나 다른 기기·브라우저에서 열면 보이지 않으니, 필요하면 CSV로 저장해 두세요. 시뮬레이터가 지원하는 범위(아치 높이 14~52 mm, 발 길이 200~300 mm, 스팬 130~220 mm, 체중 40~120 kg)를 벗어난 값은 적용할 때 가까운 값으로 조정되며, 표에서 주황색으로 표시됩니다.</p>
+  </section>
+</div>
+
+<script>
+const KEY='footarch.records.v1';
+const $=s=>document.querySelector(s);
+const RANGE={h:[14,52],len:[200,300],span:[130,220],mass:[40,120]};
+let storageOk=true,editingId=null,clearTimer=0;
+
+function load(){try{const a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a:[];}catch(e){storageOk=false;return [];}}
+function save(a){try{localStorage.setItem(KEY,JSON.stringify(a));return true;}catch(e){storageOk=false;return false;}}
+const val=id=>{const v=$(id).value.trim();return v===''?null:Number(v);};
+const out=(v,r)=>v<r[0]||v>r[1];
+const todayStr=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());};
+
+function setMsg(t,cls){const m=$('#msg');m.textContent=t;m.className='msg'+(cls?' '+cls:'');}
+
+function calc(){
+  const hs=val('#fHs'),ht=val('#fHt');
+  $('#calc').textContent=(hs!=null&&ht!=null)?'주상골 하강: '+(hs-ht).toFixed(1)+' mm':'';
+}
+['#fHs','#fHt'].forEach(i=>$(i).addEventListener('input',calc));
+
+function resetForm(){
+  $('#form').reset();$('#fDate').value=todayStr();editingId=null;
+  $('#formTitle').textContent='측정값 기록';$('#btnSave').textContent='기록 저장';calc();
+}
+
+function validate(){
+  const need=[['#fDate','측정일'],['#fW','체중'],['#fL','발 길이'],['#fS','스팬'],['#fHs','앉은 자세 아치 높이']];
+  for(const [id,n] of need){if($(id).value.trim()===''){$(id).focus();return n+' 값을 입력하세요.';}}
+  const chk=[['#fW','체중'],['#fL','발 길이'],['#fS','스팬'],['#fHs','앉은 자세 아치 높이'],['#fHt','선 자세 아치 높이'],['#fAI','아치 인덱스']];
+  for(const [id,n] of chk){
+    const el=$(id);if(el.value.trim()==='')continue;
+    const v=Number(el.value);
+    if(!isFinite(v)||v<Number(el.min)||v>Number(el.max)){el.focus();return n+' 값은 '+el.min+'~'+el.max+' 범위로 입력하세요.';}
+  }
+  return '';
+}
+
+function onSave(){
+  const e=validate();
+  if(e){setMsg(e,'err');return;}
+  const rec={
+    id:editingId||Date.now(),date:$('#fDate').value,label:$('#fLabel').value.trim(),side:$('#fSide').value,
+    weight:val('#fW'),len:val('#fL'),span:val('#fS'),hSit:val('#fHs'),hStand:val('#fHt'),ai:val('#fAI'),memo:$('#fMemo').value.trim()
+  };
+  const all=load();
+  const i=all.findIndex(r=>r.id===rec.id);
+  if(i>=0)all[i]=rec;else all.push(rec);
+  all.sort((a,b)=>a.date===b.date?a.id-b.id:(a.date<b.date?1:-1));
+  if(!save(all)){setMsg('저장하지 못했습니다. 브라우저가 저장공간 사용을 막고 있을 수 있습니다.','err');return;}
+  setMsg(i>=0?'기록을 수정했습니다.':'기록을 저장했습니다.','ok');
+  resetForm();render();
+}
+
+function hash(r){
+  const q=new URLSearchParams({h:r.hSit,len:r.len,span:r.span,mass:r.weight});
+  return 'index.html#'+q.toString();
+}
+
+function render(){
+  const all=load(),wrap=$('#tableWrap');
+  $('#count').textContent=all.length?'('+all.length+'건)':'';
+  wrap.innerHTML='';
+  if(!all.length){
+    const d=document.createElement('div');d.className='empty';
+    d.textContent=storageOk?'저장된 기록이 없습니다. 위 양식으로 첫 기록을 남겨 보세요.':'이 브라우저에서는 기록을 저장할 수 없습니다.';
+    wrap.appendChild(d);return;
+  }
+  const t=document.createElement('table');
+  const heads=['측정일','구분','발','체중 kg','발 길이 mm','스팬 mm','앉은 높이 mm','선 높이 mm','하강 mm','아치 인덱스','메모',''];
+  const hr=t.createTHead().insertRow();
+  heads.forEach((h,i)=>{const th=document.createElement('th');th.textContent=h;if(i===1||i===10)th.className='l';hr.appendChild(th);});
+  const tb=t.createTBody();
+  all.forEach(r=>{
+    const tr=tb.insertRow();
+    const cell=(txt,cls)=>{const td=tr.insertCell();td.textContent=txt;if(cls)td.className=cls;return td;};
+    cell(r.date,'num');cell(r.label||'-','l');cell(r.side);
+    cell(r.weight,'num'+(out(r.weight,RANGE.mass)?' out':''));
+    cell(r.len,'num'+(out(r.len,RANGE.len)?' out':''));
+    cell(r.span,'num'+(out(r.span,RANGE.span)?' out':''));
+    cell(r.hSit,'num'+(out(r.hSit,RANGE.h)?' out':''));
+    cell(r.hStand==null?'-':r.hStand,'num');
+    cell(r.hStand==null?'-':(r.hSit-r.hStand).toFixed(1),'num');
+    cell(r.ai==null?'-':r.ai.toFixed(2),'num');
+    cell(r.memo||'','memo');
+    const act=tr.insertCell(),box=document.createElement('div');box.className='rowbtns';
+    const a=document.createElement('a');a.className='btn';a.href=hash(r);a.textContent='시뮬레이터에 적용';box.appendChild(a);
+    const ed=document.createElement('button');ed.type='button';ed.textContent='수정';ed.onclick=()=>edit(r.id);box.appendChild(ed);
+    const del=document.createElement('button');del.type='button';del.className='danger';del.textContent='삭제';
+    del.onclick=()=>{
+      if(del.dataset.sure){const n=load().filter(x=>x.id!==r.id);save(n);render();return;}
+      del.dataset.sure='1';del.textContent='한 번 더';setTimeout(()=>{del.dataset.sure='';del.textContent='삭제';},3000);
+    };
+    box.appendChild(del);act.appendChild(box);
+  });
+  wrap.appendChild(t);
+}
+
+function edit(id){
+  const r=load().find(x=>x.id===id);if(!r)return;
+  editingId=id;
+  $('#fDate').value=r.date;$('#fLabel').value=r.label||'';$('#fSide').value=r.side;
+  $('#fW').value=r.weight;$('#fL').value=r.len;$('#fS').value=r.span;$('#fHs').value=r.hSit;
+  $('#fHt').value=r.hStand==null?'':r.hStand;$('#fAI').value=r.ai==null?'':r.ai;$('#fMemo').value=r.memo||'';
+  $('#formTitle').textContent='기록 수정';$('#btnSave').textContent='수정 저장';calc();
+  setMsg('수정한 뒤 "수정 저장"을 누르세요. 취소하려면 "입력 지우기"를 누르세요.');
+  $('#formTitle').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function csvEsc(v){const s=v==null?'':String(v);return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}
+function exportCsv(){
+  const all=load();
+  if(!all.length){setMsg('저장할 기록이 없습니다.','err');return;}
+  const head=['측정일','구분','발','체중(kg)','발 길이(mm)','스팬(mm)','앉은 자세 아치 높이(mm)','선 자세 아치 높이(mm)','주상골 하강(mm)','아치 인덱스','메모'];
+  const rows=all.map(r=>[r.date,r.label,r.side,r.weight,r.len,r.span,r.hSit,r.hStand,r.hStand==null?'':+(r.hSit-r.hStand).toFixed(1),r.ai,r.memo].map(csvEsc).join(','));
+  const blob=new Blob(['﻿'+[head.map(csvEsc).join(',')].concat(rows).join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='foot-records-'+todayStr()+'.csv';
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  setMsg('CSV 파일을 저장했습니다.','ok');
+}
+
+$('#btnSave').addEventListener('click',onSave);
+$('#btnReset').addEventListener('click',()=>{resetForm();setMsg('');});
+$('#btnCsv').addEventListener('click',exportCsv);
+$('#btnClear').addEventListener('click',()=>{
+  const b=$('#btnClear');
+  if(b.dataset.sure){save([]);b.dataset.sure='';b.textContent='전체 삭제';clearTimeout(clearTimer);render();setMsg('모든 기록을 삭제했습니다.','ok');return;}
+  if(!load().length)return;
+  b.dataset.sure='1';b.textContent='정말 삭제? 한 번 더 누르세요';
+  clearTimer=setTimeout(()=>{b.dataset.sure='';b.textContent='전체 삭제';},4000);
+});
+$('#form').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName!=='TEXTAREA'){e.preventDefault();onSave();}});
+
+resetForm();render();
+</script>
+</body>
+</html>

@@ -117,9 +117,10 @@ details ul{margin:8px 0 0;padding-left:18px}
 <div class="wrap">
   <header class="top">
     <div>
-      <h1>발 아치 높이 시뮬레이터 <small class="num" id="ver" style="font-size:13px;font-weight:500;color:var(--muted)">Ver0.0.3</small></h1>
+      <h1>발 아치 높이 시뮬레이터 <small class="num" id="ver" style="font-size:13px;font-weight:500;color:var(--muted)">Ver0.0.4</small></h1>
       <p class="sub">내측 종아치 높이를 바꾸면 하중을 받을 때 아치가 얼마나 내려앉고, 족저압과 후족 정렬이 어떻게 달라지는지 실험합니다.</p>
     </div>
+    <a href="measure.html" style="font-size:13px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);text-decoration:none">측정 방법·기록 →</a>
   </header>
 
   <div class="layout">
@@ -963,6 +964,15 @@ $('#play').addEventListener('click',()=>{
 });
 window.addEventListener('resize',schedule);
 try{window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',schedule);}catch(e){}
+// 측정 기록 페이지에서 넘어온 값(#h=..&len=..&span=..&mass=..) 적용
+(function(){
+  const q=new URLSearchParams(location.hash.slice(1));
+  [['h','H0',sl.H,14,52],['len','len',sl.F,200,300],['span','span',sl.P,130,220],['mass','mass',sl.M,40,120]].forEach(a=>{
+    if(!q.has(a[0])||q.get(a[0])==='')return;
+    const v=Number(q.get(a[0]));if(!isFinite(v))return;
+    state[a[1]]=clamp(Math.round(v),a[3],a[4]);a[2].value=state[a[1]];
+  });
+})();
 syncOut();
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(schedule);
 render(true);
