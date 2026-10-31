@@ -50,6 +50,18 @@ ol.steps b{font-weight:600}
 .rec input{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit;font-size:16px}
 .rec .tip{margin-top:4px}
 .rec .calc2{color:var(--accent);font-weight:600;min-height:18px}
+.landmarks{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 4px}
+.landmarks .fig{flex:1 1 280px;margin:6px 0}
+.landmarks .fig svg{max-width:460px}
+.landmarks .fig .tx{font-size:12.5px}.landmarks .fig .tm{font-size:13px}
+.fig .bd{fill:var(--accent)}
+.fig .bt{fill:var(--accent-ink);font-size:11px;font-weight:700}
+.fig .pt2{fill:none;stroke:var(--accent);stroke-width:2.5}
+.fig .ref{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-dasharray:3 2}
+.fig .lead{fill:none;stroke:var(--accent);stroke-width:1.2}
+.fig figcaption{font-size:12px;color:var(--muted);text-align:center;margin-top:2px}
+ol.legend{margin:6px 0 0;padding-left:22px;font-size:13.5px}
+ol.legend li{margin:0 0 5px}
 .easy{font-size:14.5px;font-weight:500;margin:3px 0 0}
 .fig{margin:8px 0 6px;background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:6px}
 .fig svg{display:block;width:100%;max-width:340px;height:auto;margin:0 auto}
@@ -96,7 +108,7 @@ td.out{color:var(--warn)}
 <div class="wrap">
   <header class="top">
     <div>
-      <h1>발 측정 기록 <small class="num">Ver0.0.6</small></h1>
+      <h1>발 측정 기록 <small class="num">Ver0.0.7</small></h1>
       <p class="sub">측정하는 방법을 확인하고, 측정값을 기록해 시뮬레이터에 바로 적용합니다.</p>
     </div>
     <a class="btn" href="index.html">← 시뮬레이터로 돌아가기</a>
@@ -105,6 +117,19 @@ td.out{color:var(--warn)}
   <section class="card">
     <h2>측정하는 방법</h2>
     <p class="tip" style="margin-top:0">준비물: 체중계, 150 mm 이상 디지털 캘리퍼스, 30 cm 이상의 자(또는 줄자), 종이, 펜, 벽, 단단한 평지. 모든 측정은 맨발로, 같은 시간대에 하고 3회 재서 평균을 기록하세요.</p>
+    <h3>먼저, 발에서 이 5곳을 찾아봐요</h3>
+    <div class="landmarks">
+      <figure class="fig" style="margin:6px 0"><svg viewBox="0 0 360 210" role="img" aria-label="안쪽에서 본 오른발: 1 뒤꿈치 끝, 2 안쪽 복사뼈, 3 주상골 결절, 4 엄지발가락 아래 볼록한 뼈, 5 가장 긴 발가락 끝의 위치"><path class="ln" d="M20 170 L340 170"/><path class="ln" d="M62 100 L62 18 M140 88 L140 18"/><path class="ft" d="M48 170 C40 150 42 120 52 104 L62 100 L140 88 C175 96 230 108 290 128 C310 134 330 140 335 152 C340 166 336 170 322 170 L262 170 C240 168 220 148 190 148 C160 148 140 170 110 170 Z"/><circle class="pt2" cx="44" cy="140" r="6"/><path class="lead" d="M44 146 L44 181"/><circle class="bd" cx="44" cy="190" r="9"/><text class="bt" x="44" y="194" text-anchor="middle">1</text><text class="tx" x="57" y="194">뒤꿈치 끝</text><circle class="ref" cx="100" cy="86" r="10"/><path class="lead" d="M100 76 L100 60"/><circle class="bd" cx="100" cy="51" r="9"/><text class="bt" x="100" y="55" text-anchor="middle">2</text><text class="tx" x="100" y="38" text-anchor="middle">안쪽 복사뼈</text><circle class="pt" cx="170" cy="124" r="6"/><path class="lead" d="M172 118 L190 80"/><circle class="bd" cx="192" cy="71" r="9"/><text class="bt" x="192" y="75" text-anchor="middle">3</text><text class="tm" x="206" y="75">주상골 결절</text><circle class="pt2" cx="258" cy="150" r="6"/><path class="lead" d="M258 156 L240 181"/><circle class="bd" cx="236" cy="190" r="9"/><text class="bt" x="236" y="194" text-anchor="middle">4</text><text class="tx" x="249" y="194">엄지 아래 볼록한 뼈</text><circle class="pt2" cx="334" cy="152" r="6"/><path class="lead" d="M334 146 L338 108"/><circle class="bd" cx="339" cy="99" r="9"/><text class="bt" x="339" y="103" text-anchor="middle">5</text><text class="tx" x="327" y="103" text-anchor="end">발가락 끝</text></svg><figcaption>안쪽에서 본 오른발</figcaption></figure>
+      <figure class="fig" style="margin:6px 0"><svg viewBox="0 0 410 175" role="img" aria-label="위에서 본 오른발: 1 뒤꿈치 끝, 4 엄지발가락 아래 볼록한 뼈, 5 가장 긴 발가락 끝과 발 길이, 스팬 구간"><g transform="translate(36 0)"><ellipse class="ft" cx="318" cy="50" rx="24" ry="11"/><ellipse class="ft" cx="306" cy="72" rx="15" ry="9"/><ellipse class="ft" cx="298" cy="88" rx="13" ry="8"/><ellipse class="ft" cx="288" cy="102" rx="11" ry="7"/><ellipse class="ft" cx="277" cy="114" rx="10" ry="7"/><path class="ft" d="M48 90 C48 60 76 54 104 58 C140 62 170 66 205 58 C232 52 262 42 292 40 L300 120 C275 128 240 120 210 118 C170 120 130 126 100 124 C68 124 48 114 48 90Z"/><path class="dash" d="M48 96 L48 150 M235 52 L235 150 M342 56 L342 130"/><circle class="pt2" cx="48" cy="90" r="6"/><circle class="pt" cx="235" cy="50" r="6"/><circle class="pt2" cx="342" cy="50" r="6"/></g><path class="lead" d="M23 90 L78 90"/><circle class="bd" cx="14" cy="90" r="9"/><text class="bt" x="14" y="94" text-anchor="middle">1</text><text class="tx" x="3" y="112">뒤꿈치 끝</text><path class="lead" d="M271 44 L271 28"/><circle class="bd" cx="271" cy="19" r="9"/><text class="bt" x="271" y="23" text-anchor="middle">4</text><text class="tx" x="259" y="23" text-anchor="end">엄지 아래 볼록한 뼈</text><path class="lead" d="M384 50 L387 50"/><circle class="bd" cx="397" cy="50" r="9"/><text class="bt" x="397" y="54" text-anchor="middle">5</text><text class="tx" x="408" y="30" text-anchor="end">가장 긴 발가락 끝</text><path class="lead" d="M397 41 L397 36" /><path class="dim" d="M84 130 L378 130"/><text class="tm" x="231" y="144" text-anchor="middle">발 길이: 1에서 5까지</text><path class="dim" d="M84 152 L271 152"/><text class="tm" x="178" y="166" text-anchor="middle">스팬: 1에서 4까지</text></svg><figcaption>위에서 본 오른발 (엄지발가락이 위쪽)</figcaption></figure>
+    </div>
+    <ol class="legend">
+        <li><b>뒤꿈치 끝</b> — 발 길이와 스팬을 재기 시작하는 곳이에요. 벽에 딱 붙이는 곳이에요.</li>
+        <li><b>안쪽 복사뼈</b> — 발목 안쪽의 둥근 뼈예요. 주상골을 찾을 때 길잡이로만 쓰고, 여기를 재지는 않아요.</li>
+        <li><b>주상골 결절</b> — 안쪽 복사뼈에서 엄지손가락 한 마디쯤 앞쪽·아래쪽, 발 안쪽에 볼록 튀어나온 뼈예요. 손가락으로 눌러 보면 딱딱한 혹이 만져져요. 여기에 스티커나 펜으로 점을 찍고, 바닥에서 점까지 높이를 재요(이 값이 "아치 높이").</li>
+        <li><b>엄지발가락 아래 볼록한 뼈</b> — 엄지발가락이 시작되는 발볼 안쪽의 가장 넓은 곳이에요. 스팬을 재는 끝점이에요.</li>
+        <li><b>가장 긴 발가락 끝</b> — 보통 엄지발가락이고, 사람에 따라 둘째 발가락이에요. 발 길이를 재는 끝점이에요.</li>
+      </ol>
+    <h3>이제 순서대로 재 봐요</h3>
     <ol class="steps">
       <li><b>체중</b>
         <p class="easy">체중계 위에 올라가서 숫자를 읽어요. 단위는 kg이에요.</p>
