@@ -42,6 +42,18 @@ a{color:var(--accent)}
 ol.steps{margin:0;padding-left:20px}
 ol.steps>li{margin:0 0 12px}
 ol.steps b{font-weight:600}
+.easy{font-size:14.5px;font-weight:500;margin:3px 0 0}
+.fig{margin:8px 0 6px;background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:6px}
+.fig svg{display:block;width:100%;max-width:340px;height:auto;margin:0 auto}
+.fig .ln{fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.fig .ft{fill:var(--surface);stroke:var(--ink);stroke-width:2;stroke-linejoin:round}
+.fig .dash{fill:none;stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3}
+.fig .dim{fill:none;stroke:var(--accent);stroke-width:2;marker-start:url(#ar);marker-end:url(#ar)}
+.fig .dim1{fill:none;stroke:var(--accent);stroke-width:2.5;marker-end:url(#ar)}
+.fig .pt{fill:var(--accent);stroke:var(--surface);stroke-width:1.5}
+.fig .tx{fill:var(--ink);font-size:11px}
+.fig .tm{fill:var(--accent);font-size:12px;font-weight:600}
+.fig .wl{fill:var(--muted)}
 .tip{font-size:13px;color:var(--muted);margin:2px 0 0}
 .warn{border-left:3px solid var(--warn);background:var(--surface2);padding:8px 12px;border-radius:0 8px 8px 0;font-size:13.5px;margin-top:12px}
 .form{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px 16px}
@@ -72,10 +84,11 @@ td.out{color:var(--warn)}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="ar" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--accent)"/></marker></defs></svg>
 <div class="wrap">
   <header class="top">
     <div>
-      <h1>발 측정 기록 <small class="num">Ver0.0.4</small></h1>
+      <h1>발 측정 기록 <small class="num">Ver0.0.5</small></h1>
       <p class="sub">측정하는 방법을 확인하고, 측정값을 기록해 시뮬레이터에 바로 적용합니다.</p>
     </div>
     <a class="btn" href="index.html">← 시뮬레이터로 돌아가기</a>
@@ -86,18 +99,32 @@ td.out{color:var(--warn)}
     <p class="tip" style="margin-top:0">준비물: 체중계, 150 mm 이상 디지털 캘리퍼스, 30 cm 이상의 자(또는 줄자), 종이, 펜, 벽, 단단한 평지. 모든 측정은 맨발로, 같은 시간대에 하고 3회 재서 평균을 기록하세요.</p>
     <ol class="steps">
       <li><b>체중</b>
+        <p class="easy">체중계 위에 올라가서 숫자를 읽어요. 단위는 kg이에요.</p>
+        <figure class="fig" style="margin:8px 0 6px"><svg viewBox="0 0 320 150" role="img" aria-label="체중계 위에 사람이 서 있는 그림"><rect class="ft" x="70" y="118" width="180" height="20" rx="6"/><rect class="ft" x="205" y="122" width="38" height="12" rx="3"/><text class="tx" x="224" y="131" text-anchor="middle" font-size="9">kg</text><circle class="ft" cx="150" cy="30" r="14"/><path class="ln" d="M150 44 L150 88 M150 54 L128 76 M150 54 L172 76 M150 88 L136 118 M150 88 L164 118"/><text class="tm" x="285" y="60" text-anchor="end">올라서요</text></svg></figure>
         <div class="tip">가벼운 옷차림으로 체중계에 올라 kg 단위로 기록합니다.</div></li>
       <li><b>발 길이</b>
+        <p class="easy">뒤꿈치를 벽에 딱 붙이고 서요. 가장 긴 발가락 끝에 표시하고, 벽에서 그 표시까지 길이를 재요.</p>
+        <figure class="fig" style="margin:8px 0 6px"><svg viewBox="0 0 320 150" role="img" aria-label="벽에 뒤꿈치를 붙인 발을 위에서 본 그림, 벽에서 발가락 끝까지의 길이 화살표"><rect x="40" y="22" width="8" height="78" class="wl"/><text class="tx" x="44" y="16" text-anchor="middle">벽</text><rect x="48" y="24" width="250" height="74" fill="var(--bg)" stroke="var(--line)"/><path class="ft" d="M50 60 C50 44 70 42 100 46 L205 50 C232 52 250 56 250 62 C250 70 232 76 205 78 L100 82 C70 84 50 76 50 60Z"/><path class="dash" d="M252 30 L252 112"/><circle class="pt" cx="252" cy="62" r="5"/><path class="dim" d="M50 118 L252 118"/><text class="tm" x="151" y="138" text-anchor="middle">발 길이</text><text class="tx" x="150" y="64" text-anchor="middle">발(위에서 본 모습)</text></svg></figure>
         <div class="tip">종이를 벽에 붙이고 뒤꿈치를 벽에 댄 채 체중을 실어 섭니다. 가장 긴 발가락 끝 위치를 종이에 표시하고, 벽에서 그 표시까지 거리를 mm로 잽니다. Brannock Device의 길이 눈금은 신발 사이즈 단위이므로 mm 값을 직접 재세요.</div></li>
       <li><b>스팬 (아치 길이)</b>
+        <p class="easy">같은 종이에서, 벽부터 엄지발가락 아래쪽에 볼록 튀어나온 뼈까지 길이를 재요.</p>
+        <figure class="fig" style="margin:8px 0 6px"><svg viewBox="0 0 320 150" role="img" aria-label="벽에서 엄지발가락 아래 볼록한 뼈까지의 길이 화살표"><rect x="40" y="22" width="8" height="78" class="wl"/><text class="tx" x="44" y="16" text-anchor="middle">벽</text><rect x="48" y="24" width="250" height="74" fill="var(--bg)" stroke="var(--line)"/><path class="ft" d="M50 60 C50 44 70 42 100 46 L205 50 C232 52 250 56 250 62 C250 70 232 76 205 78 L100 82 C70 84 50 76 50 60Z"/><path class="dash" d="M178 52 L178 112"/><circle class="pt" cx="178" cy="52" r="5"/><path class="ln" d="M190 18 L181 46" stroke-width="1.2"/><text class="tx" x="200" y="14" text-anchor="middle">엄지발가락 아래 볼록한 뼈</text><path class="dim" d="M50 118 L178 118"/><text class="tm" x="114" y="138" text-anchor="middle">스팬</text></svg></figure>
         <div class="tip">같은 종이에서 뒤꿈치 끝부터 엄지발가락 아래쪽 튀어나온 뼈(1중족골두, 발볼의 안쪽 가장 넓은 부분) 중심까지의 거리를 잽니다. 이 값이 시뮬레이터의 스팬입니다.</div></li>
       <li><b>아치 높이 (앉은 자세, 무하중)</b>
+        <p class="easy">의자에 앉아서 발에 힘을 빼요. 발 안쪽의 볼록한 뼈(점)가 바닥에서 얼마나 높은지 재요. 혼자 하기 어려우면 어른과 함께 해요.</p>
+        <figure class="fig" style="margin:8px 0 6px"><svg viewBox="0 0 320 150" role="img" aria-label="의자에 앉은 발을 옆에서 본 그림, 바닥에서 발 안쪽 뼈까지의 높이 화살표"><path class="ln" d="M20 140 L300 140"/><path class="ln" d="M60 66 L150 66 M70 66 L70 140"/><path class="ln" d="M222 36 L60 36 M194 62 L60 62 M194 62 L194 108 M222 36 L222 100"/><path class="ft" d="M190 140 L190 116 C194 104 214 100 238 104 C258 108 272 118 292 134 L292 140 L264 140 C252 128 226 126 214 140Z"/><path class="dash" d="M165 106 L228 106"/><circle class="pt" cx="230" cy="106" r="5"/><path class="dim" d="M165 106 L165 140"/><text class="tm" x="158" y="128" text-anchor="end">높이</text><text class="tm" x="300" y="22" text-anchor="end">앉아서: 힘 빼기</text></svg></figure>
         <div class="tip">의자에 앉아 발바닥 전체를 바닥에 가볍게 붙이고 체중은 싣지 않습니다. 발 안쪽 복사뼈 앞아래에 튀어나온 뼈(주상골 결절)를 손으로 찾아 표시한 뒤, 바닥에서 그 표시까지 수직 높이를 캘리퍼스(깊이 막대)나 직각 자로 잽니다. 이 값이 시뮬레이터의 "아치 높이"입니다.</div></li>
       <li><b>아치 높이 (선 자세, 하중)</b>
+        <p class="easy">이번에는 일어서서 두 발에 체중을 반씩 싣고 똑같이 재요. 앉았을 때보다 낮아진 만큼이 "내려간 정도"예요.</p>
+        <figure class="fig" style="margin:8px 0 6px"><svg viewBox="0 0 320 150" role="img" aria-label="서 있는 발을 옆에서 본 그림, 앉았을 때보다 뼈가 내려간 만큼의 화살표"><path class="ln" d="M20 140 L300 140"/><path class="ln" d="M194 122 L194 20 M222 114 L222 20"/><path class="ft" d="M190 140 L190 120 C194 112 214 110 238 113 C258 116 272 124 292 136 L292 140 L264 140 C254 134 226 134 214 140Z"/><circle cx="230" cy="92" r="5" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="3 2"/><circle class="pt" cx="230" cy="116" r="5"/><path class="dash" d="M230 92 L252 92"/><path class="dim" d="M252 93 L252 115"/><text class="tm" x="260" y="108">내려감</text><text class="tx" x="260" y="88">앉았을 때</text><path class="dim" d="M165 116 L165 140"/><text class="tm" x="158" y="132" text-anchor="end">높이</text><text class="tm" x="300" y="14" text-anchor="end">서서: 반반 싣기</text></svg></figure>
         <div class="tip">같은 표시를 유지한 채 양발에 체중을 반씩 싣고 편하게 서서 같은 높이를 잽니다. <b>주상골 하강 = 앉은 높이 − 선 높이</b>이며, 이 페이지가 자동 계산합니다. 시뮬레이터의 주상골 하강 값과 비교해 보세요.</div></li>
       <li><b>아치 인덱스 (선택)</b>
+        <p class="easy">발자국을 길이로 3칸으로 나누고, 가운데 칸이 전체에서 얼마나 차지하는지 계산해요. 어려우면 건너뛰어도 돼요.</p>
+        <figure class="fig" style="margin:8px 0 6px"><svg viewBox="0 0 320 150" role="img" aria-label="발자국을 길이 방향으로 3칸으로 나눈 그림, 가운데 칸을 색칠"><clipPath id="fp6"><path d="M70 80 C70 58 95 54 120 64 L160 68 C190 68 215 56 245 58 C264 60 268 84 248 96 C225 106 190 98 160 94 L120 98 C92 102 70 100 70 80Z"/></clipPath><path class="ft" d="M70 80 C70 58 95 54 120 64 L160 68 C190 68 215 56 245 58 C264 60 268 84 248 96 C225 106 190 98 160 94 L120 98 C92 102 70 100 70 80Z"/><rect x="135" y="40" width="66" height="80" fill="var(--accent)" opacity=".35" clip-path="url(#fp6)"/><path class="dash" d="M135 44 L135 112 M201 44 L201 112"/><circle cx="276" cy="62" r="6" fill="none" stroke="var(--muted)" stroke-dasharray="2 2"/><circle cx="281" cy="76" r="6" fill="none" stroke="var(--muted)" stroke-dasharray="2 2"/><circle cx="275" cy="90" r="6" fill="none" stroke="var(--muted)" stroke-dasharray="2 2"/><text class="tx" x="250" y="32" text-anchor="middle">발가락은 빼요</text><text class="tx" x="102" y="128" text-anchor="middle">뒤</text><text class="tm" x="168" y="128" text-anchor="middle">가운데</text><text class="tx" x="234" y="128" text-anchor="middle">앞</text></svg></figure>
         <div class="tip">발자국을 찍어(잉크, 물, 온도 색깔 시트 등) 발가락을 뺀 발자국을 길이 방향으로 3등분합니다. <b>가운데 부분 면적 ÷ (뒤·가운데·앞 세 부분 면적의 합)</b>이 아치 인덱스입니다.</div></li>
       <li><b>족저압 (선택)</b>
+        <p class="easy">특별한 장비가 있을 때만 해요. 발로 밟은 압력을 CSV 파일로 저장해서 불러오면 돼요. 없으면 건너뛰어도 괜찮아요.</p>
+        <figure class="fig" style="margin:8px 0 6px"><svg viewBox="0 0 320 150" role="img" aria-label="족저압 매트를 밟은 결과가 CSV 파일로 저장되는 그림"><rect class="ft" x="20" y="24" width="110" height="104" rx="8"/><ellipse cx="75" cy="106" rx="16" ry="13" fill="var(--bad)" opacity=".75"/><ellipse cx="88" cy="78" rx="8" ry="12" fill="var(--accent)" opacity=".5"/><ellipse cx="64" cy="52" rx="12" ry="11" fill="var(--warn)" opacity=".8"/><ellipse cx="90" cy="50" rx="10" ry="10" fill="var(--warn)" opacity=".7"/><circle cx="58" cy="35" r="4" fill="var(--accent)" opacity=".6"/><circle cx="72" cy="32" r="4" fill="var(--accent)" opacity=".6"/><circle cx="86" cy="33" r="4" fill="var(--accent)" opacity=".6"/><path class="dim1" d="M138 76 L186 76"/><rect class="ft" x="196" y="30" width="80" height="94" rx="6"/><text class="tm" x="236" y="62" text-anchor="middle" font-size="16">CSV</text><path class="ln" d="M210 80 L262 80 M210 94 L262 94 M210 108 L262 108" opacity=".4" stroke-width="1.5"/><text class="tx" x="75" y="144" text-anchor="middle">족저압 매트</text><text class="tx" x="236" y="144" text-anchor="middle">파일로 저장</text></svg></figure>
         <div class="tip">족저압 장비가 있으면 압력 격자를 CSV로 내보내 시뮬레이터의 "측정 데이터 불러오기"에서 비교합니다.</div></li>
     </ol>
     <div class="warn">주상골 결절은 손으로 찾기 때문에 측정자에 따라 1~2 mm 오차가 날 수 있습니다. 표시를 지우지 말고, 같은 사람이 같은 방법으로 반복해서 재는 것이 좋습니다. 이 도구는 교육용이며 진단에 쓸 수 없습니다.</div>
