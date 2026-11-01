@@ -105,6 +105,19 @@ details ul{margin:8px 0 0;padding-left:18px}
 .meas{display:grid;grid-template-columns:minmax(0,240px) 1fr;gap:16px;align-items:start;margin-top:6px}
 @media (max-width:720px){.meas{grid-template-columns:1fr}}
 #cvMeas{max-width:240px;border:1px solid var(--line);border-radius:6px;background:var(--surface2)}
+.supwrap{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start;margin-top:10px}
+#supSvg{width:120px;flex:0 0 auto;display:block}
+#supSvg .sf{fill:var(--surface2);stroke:var(--ink);stroke-width:1.5}
+#supSvg .zn{fill:var(--accent);fill-opacity:.38;stroke:var(--accent);stroke-width:1.5}
+#supSvg .zh{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-dasharray:5 3}
+#supSvg text{fill:var(--muted);font-size:9px}
+.suplist{flex:1 1 260px;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;min-width:0}
+.supitem{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.supitem .nm{font-size:13px;font-weight:600}
+.supitem .ht{font-size:26px;font-weight:600;color:var(--accent);line-height:1.2}
+.supitem .ht small{font-size:13px;font-weight:400;color:var(--muted);margin-left:3px}
+.supitem .ps,.supitem .rs{font-size:12.5px;color:var(--muted);margin-top:2px}
+.supitem .ps b{color:var(--ink);font-weight:500}
 .mtab{width:100%;border-collapse:collapse;font-size:13px}
 .mtab th,.mtab td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:right}
 .mtab th:first-child,.mtab td:first-child{text-align:left}
@@ -117,7 +130,7 @@ details ul{margin:8px 0 0;padding-left:18px}
 <div class="wrap">
   <header class="top">
     <div>
-      <h1>발 아치 높이 시뮬레이터 <small class="num" id="ver" style="font-size:13px;font-weight:500;color:var(--muted)">Ver0.0.12</small></h1>
+      <h1>발 아치 높이 시뮬레이터 <small class="num" id="ver" style="font-size:13px;font-weight:500;color:var(--muted)">Ver0.0.13</small></h1>
       <p class="sub">내측 종아치 높이를 바꾸면 하중을 받을 때 아치가 얼마나 내려앉고, 족저압과 후족 정렬이 어떻게 달라지는지 실험합니다.</p>
     </div>
     <a href="measure.html" style="font-size:13px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);text-decoration:none">측정 방법·기록 →</a>
@@ -228,6 +241,42 @@ details ul{margin:8px 0 0;padding-left:18px}
       </div>
 
       <div class="notes" id="notes" aria-live="polite"></div>
+
+      <section class="card section" id="supCard">
+        <h2>서포트 추천<small>보조 조건: 서포트가 필요한 곳과 높이를 자동으로 계산합니다</small></h2>
+        <div class="note" id="supSum" aria-live="polite"></div>
+        <div class="supwrap">
+          <svg id="supSvg" viewBox="0 0 110 275" role="img" aria-label="서포트가 들어갈 위치를 표시한 오른발 바닥 모양. 위쪽이 발가락, 아래쪽이 뒤꿈치, 왼쪽이 안쪽입니다.">
+            <defs><clipPath id="supClip"><path d="M40 252 C24 252 20 234 22 214 C24 196 34 182 36 164 C38 148 30 134 28 112 C26 90 24 70 30 48 C36 26 56 14 76 20 C94 26 96 48 94 76 C93 98 92 118 92 140 C92 170 96 196 92 222 C88 244 66 252 40 252 Z"/></clipPath></defs>
+            <path class="sf" d="M40 252 C24 252 20 234 22 214 C24 196 34 182 36 164 C38 148 30 134 28 112 C26 90 24 70 30 48 C36 26 56 14 76 20 C94 26 96 48 94 76 C93 98 92 118 92 140 C92 170 96 196 92 222 C88 244 66 252 40 252 Z"/>
+            <g clip-path="url(#supClip)">
+              <ellipse class="zn" id="zArch" cx="44" cy="158" rx="20" ry="16" hidden/>
+              <ellipse class="zn" id="zMt" cx="62" cy="128" rx="30" ry="8" hidden/>
+            </g>
+            <ellipse class="zh" id="zHeel" cx="58" cy="230" rx="34" ry="24" hidden/>
+            <text x="55" y="10" text-anchor="middle">발가락</text>
+            <text x="55" y="271" text-anchor="middle">뒤꿈치</text>
+            <text x="2" y="150" text-anchor="start">안쪽</text>
+          </svg>
+          <div class="suplist" id="supList"></div>
+        </div>
+        <div class="mrow" style="margin-top:10px">
+          <button id="supApply" type="button">추천 높이를 인솔 서포트에 적용</button>
+          <button id="supOff" type="button">인솔 서포트 0 mm로</button>
+        </div>
+        <table class="mtab" id="supCmp" style="margin-top:8px"></table>
+        <details>
+          <summary>계산 방식</summary>
+          <ul>
+            <li><b>내측 종아치 서포트 높이</b> — 낮은 아치(아치 인덱스 0.26 초과 또는 주상골 하강 7.5 mm 초과)이면 인솔 높이를 0~15 mm로 바꿔 가며 주상골 하강이 정상 기준(7 mm) 이하가 되는 가장 낮은 높이를 고릅니다. 높은 아치(아치 인덱스 0.21 미만)이면 아치 인덱스가 0.21 이상이 되는 가장 낮은 높이를 고릅니다.</li>
+            <li><b>뒤꿈치 컵</b> — 후족 외번이 6° 이상이면 깊이 = 8 + 2.5 × (외번 − 4.9) mm, 8~18 mm로 제한합니다.</li>
+            <li><b>중족골 패드</b> — 높은 아치일 때 높이 = 2 + 40 × (0.21 − 아치 인덱스) mm, 2~6 mm로 제한합니다.</li>
+            <li><b>완충 소재</b> — 높은 아치일 때 두께 = 3 + (최대 압력 − 150) ÷ 25 mm, 3~6 mm로 제한합니다.</li>
+            <li>위치는 입력한 발 길이에 대한 비율로 계산합니다(종아치 35~45%, 중족골 패드 50~56%, 뒤꿈치 컵 0~20%).</li>
+          </ul>
+        </details>
+        <p class="cap">교육용 단순 모델의 계산이며, 진단이나 인솔 처방이 아닙니다. 통증이 있거나 실제 인솔을 만들 때는 전문가와 상담하세요. 높이 12 mm를 넘으면 신발 안에서 불편할 수 있습니다.</p>
+      </section>
 
       <section class="card section" id="measCard">
         <h2>측정 데이터 불러오기 (CSV)<small>족저압 장비의 압력 격자를 시뮬레이션과 비교합니다</small></h2>
@@ -750,6 +799,71 @@ function updateNotes(s,r,f){
   if(s.loadPct>=200)out.push(['warn','달리기 착지처럼 하중이 큰 구간입니다. 같은 발이라도 하중이 커질수록 아치 하강과 최대 압력이 빠르게 증가합니다.']);
   $('#notes').innerHTML=out.map(o=>'<div class="note '+(o[0]==='info'?'':o[0])+'">'+o[1]+'</div>').join('');
 }
+
+// ---------- 서포트 추천 ----------
+const SUP={dTarget:7.05,aiMin:0.21,aiMax:0.26,dHigh:7.5};
+function recommendSupport(s){
+  const b=sim(Object.assign({},s,{S:0}));
+  if(b.F<20)return {type:'none'};
+  const fb=fp(b);
+  const t0=fb.ai<SUP.aiMin?'high':(fb.ai>SUP.aiMax||b.d>SUP.dHigh)?'low':'normal';
+  let type=t0,S=0,reach=true;
+  if(t0!=='normal'){
+    S=-1;
+    for(let k=0;k<=15;k++){
+      const r=sim(Object.assign({},s,{S:k}));
+      if(t0==='low'?r.d<=SUP.dTarget:fp(r).ai>=SUP.aiMin){S=k;break;}
+    }
+    if(S<0){S=15;reach=false;}
+    if(S===0)type='normal';
+  }
+  const r=sim(Object.assign({},s,{S})),f=fp(r);
+  return {type,S,reach,b,fb,r,f};
+}
+function updateSupport(s){
+  const R=recommendSupport(s),sum=$('#supSum'),list=$('#supList'),tb=$('#supCmp');
+  const show=(id,on)=>{$(id).hidden=!on;};
+  const L=s.len,rng=(a,b)=>Math.round(L*a)+'–'+Math.round(L*b)+' mm';
+  const items=[];
+  let cls='ok',msg='';
+  if(R.type==='none'){
+    cls='';msg='하중이 거의 없어 서포트를 계산하지 않습니다. 한 발에 걸리는 하중을 올려 보세요.';
+  }else if(R.type==='normal'){
+    msg='<b>추가 서포트가 필요하지 않습니다.</b> 서포트가 없을 때 주상골 하강 '+R.b.d.toFixed(1)+' mm, 아치 인덱스 '+R.fb.ai.toFixed(2)+'로 정상 범위입니다.';
+  }else if(R.type==='low'){
+    cls='warn';
+    msg='<b>낮은 아치 경향</b> — 내측 종아치 서포트 <b>'+R.S+' mm</b>를 추천합니다. 주상골 하강이 '+R.b.d.toFixed(1)+' → '+R.r.d.toFixed(1)+' mm로 줄어듭니다.'+(R.reach?'':' 15 mm로도 정상 기준(7 mm)에 못 미치므로 전문가 상담을 권합니다.');
+    items.push({nm:'내측 종아치 서포트 (주상골 아래)',h:R.S,u:'mm',ps:'뒤꿈치에서 <b>'+rng(.35,.45)+'</b>, 발 안쪽 가장자리',rs:'주상골 하강 '+R.b.d.toFixed(1)+' → '+R.r.d.toFixed(1)+' mm, 족저근막 장력 '+Math.round(R.b.T)+' → '+Math.round(R.r.T)+' N'});
+    if(R.b.ev>=6){
+      const h=clamp(Math.round(8+2.5*(R.b.ev-4.9)),8,18);
+      items.push({nm:'뒤꿈치 컵 (벽 높이)',h:h,u:'mm',ps:'뒤꿈치 둘레, 뒤꿈치에서 <b>0–'+Math.round(L*.2)+' mm</b>',rs:'후족 외번 '+R.b.ev.toFixed(1)+'°가 커서 뒤꿈치를 감싸 정렬을 잡아 줍니다.'});
+    }
+  }else{
+    cls='info';
+    msg='<b>높은 아치 경향</b> — 내측 종아치 서포트 <b>'+R.S+' mm</b>로 중족부 접촉을 늘려 하중을 나누는 쪽을 추천합니다. 아치 인덱스가 '+R.fb.ai.toFixed(2)+' → '+R.f.ai.toFixed(2)+'로 올라갑니다.'+(R.reach?'':' 15 mm로도 정상 하한(0.21)에 못 미칩니다.');
+    items.push({nm:'내측 종아치 서포트 (아치 채움)',h:R.S,u:'mm',ps:'뒤꿈치에서 <b>'+rng(.35,.45)+'</b>, 발 안쪽 가장자리',rs:'아치 인덱스 '+R.fb.ai.toFixed(2)+' → '+R.f.ai.toFixed(2)+', 최대 압력 '+Math.round(R.fb.peak)+' → '+Math.round(R.f.peak)+' kPa'});
+    items.push({nm:'중족골 패드',h:clamp(Math.round(2+40*(SUP.aiMin-R.fb.ai)),2,6),u:'mm',ps:'중족골두 바로 뒤, 뒤꿈치에서 <b>'+rng(.5,.56)+'</b>',rs:'전족부에 몰린 압력을 뒤쪽으로 나눕니다.'});
+    items.push({nm:'뒤꿈치·전족부 완충 소재',h:clamp(Math.round(3+(R.fb.peak-150)/25),3,6),u:'mm 두께',ps:'뒤꿈치 <b>0–'+Math.round(L*.2)+' mm</b>, 전족부 <b>'+rng(.55,.75)+'</b>',rs:'아치가 단단해 충격 흡수가 적어 부드러운 소재를 겹칩니다.'});
+  }
+  const hasArch=items.length>0&&R.S>0;
+  if(hasArch&&s.S===R.S)msg+=' 현재 인솔 서포트 설정이 추천 높이와 같습니다.';
+  else if(hasArch&&s.S>0)msg+=' (현재 인솔 서포트 설정: '+s.S+' mm)';
+  sum.className='note '+cls;sum.innerHTML=msg;
+  list.innerHTML=items.map(i=>'<div class="supitem"><div class="nm">'+i.nm+'</div><div class="ht num">'+i.h+'<small>'+i.u+'</small></div><div class="ps">'+i.ps+'</div><div class="rs">'+i.rs+'</div></div>').join('');
+  show('#zArch',hasArch);
+  show('#zMt',R.type==='high');
+  show('#zHeel',(R.type==='low'&&R.b.ev>=6)||R.type==='high');
+  $('#supApply').disabled=!hasArch||s.S===R.S;
+  $('#supOff').disabled=s.S===0;
+  window._supRec=hasArch?R.S:null;
+  if(hasArch){
+    const rows=[['주상골 하강','mm',R.b.d,R.r.d,1],['아치 인덱스','',R.fb.ai,R.f.ai,2],['후족 외번','°',R.b.ev,R.r.ev,1],['족저근막 장력','N',R.b.T,R.r.T,0],['최대 압력','kPa',R.fb.peak,R.f.peak,0]];
+    tb.innerHTML='<tr><th></th><th>서포트 없음</th><th>추천 '+R.S+' mm</th><th>차이</th></tr>'+rows.map(a=>{
+      const d=a[3]-a[2];
+      return '<tr><td>'+a[0]+'</td><td class="num">'+a[2].toFixed(a[4])+' '+a[1]+'</td><td class="num">'+a[3].toFixed(a[4])+' '+a[1]+'</td><td class="num d">'+(d>=0?'+':'−')+Math.abs(d).toFixed(a[4])+'</td></tr>';
+    }).join('');
+  }else tb.innerHTML='';
+}
 const PRESETS=[{H0:48,stiff:1.25,name:'높은 아치'},{H0:38,stiff:1,name:'정상'},{H0:26,stiff:0.65,name:'낮은 아치'}];
 function drawCompare(s){
   const rs=PRESETS.map(p=>sim(Object.assign({},s,{H0:p.H0,stiff:p.stiff})));
@@ -893,7 +1007,7 @@ function render(heavy){
   const s=eff(),r=sim(s),f=fp(r);
   const mx=state.playing?350:Math.max(100,Math.ceil(f.peak*1.1/50)*50);
   drawSide(r);drawFoot(cv.foot,r,f,mx);drawRear(r);updateTiles(r,f);
-  if(heavy){drawCompare(s);drawChart(s,r,f);updateNotes(s,r,f);lastSim={r,f};updateMeasured();}
+  if(heavy){drawCompare(s);drawChart(s,r,f);updateNotes(s,r,f);if(!state.playing)updateSupport(s);lastSim={r,f};updateMeasured();}
 }
 let pend=false;
 function schedule(){if(pend)return;pend=true;requestAnimationFrame(()=>{pend=false;render(true);});}
@@ -918,6 +1032,8 @@ $('#presets').addEventListener('click',e=>{
   state.H0=Number(b.dataset.h);state.stiff=Number(b.dataset.k);
   sl.H.value=state.H0;sl.K.value=state.stiff;syncOut();schedule();
 });
+$('#supApply').addEventListener('click',()=>{if(window._supRec==null)return;state.S=window._supRec;sl.S.value=state.S;syncOut();schedule();});
+$('#supOff').addEventListener('click',()=>{state.S=0;sl.S.value=0;syncOut();schedule();});
 $('#loads').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   state.loadPct=Number(b.dataset.l);sl.L.value=state.loadPct;syncOut();schedule();
